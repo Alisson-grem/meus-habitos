@@ -6,12 +6,47 @@ const botaoNotificacao = document.getElementById('notify-btn');
 let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
 let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
 
-// Esconde o botão de notificação se o humano já deu ou negou permissão antes
+// === MAGIA DO MODO ESCURO ===
+let isDark = localStorage.getItem('darkMode') === 'true';
+const themeBtnPC = document.getElementById('theme-btn-pc');
+const themeBtnMobile = document.getElementById('theme-btn-mobile');
+
+function aplicarTema() {
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        themeBtnPC.innerText = '☀️';
+        themeBtnMobile.querySelector('.icon').innerText = '☀️';
+    } else {
+        document.body.classList.remove('dark-mode');
+        themeBtnPC.innerText = '🌙';
+        themeBtnMobile.querySelector('.icon').innerText = '🌙';
+    }
+}
+aplicarTema();
+
+function alternarTema() {
+    isDark = !isDark;
+    localStorage.setItem('darkMode', isDark);
+    aplicarTema();
+}
+themeBtnPC.addEventListener('click', alternarTema);
+themeBtnMobile.addEventListener('click', alternarTema);
+
+
+// === BOTÕES "EM BREVE" DA SIPAH ===
+const alertaSipah = () => alert("Hmph! Sipah ainda vai construir essa tela! Segura a emoção aí, humaninho!");
+
+document.getElementById('settings-btn-pc').addEventListener('click', alertaSipah);
+document.getElementById('stats-btn-pc').addEventListener('click', alertaSipah);
+document.getElementById('settings-btn-mobile').addEventListener('click', alertaSipah);
+document.getElementById('stats-btn-mobile').addEventListener('click', alertaSipah);
+
+
+// === NOTIFICAÇÕES ===
 if (!("Notification" in window) || Notification.permission === 'granted' || Notification.permission === 'denied') {
     botaoNotificacao.style.display = 'none';
 }
 
-// Pede permissão quando clica no botão
 botaoNotificacao.addEventListener('click', () => {
     Notification.requestPermission().then(permissao => {
         if (permissao === 'granted') {
@@ -24,7 +59,6 @@ botaoNotificacao.addEventListener('click', () => {
     });
 });
 
-// Sipah dispara a notificação se bater 100%
 function enviarNotificacaoParabens() {
     if ("Notification" in window && Notification.permission === "granted" && !notificouHoje) {
         new Notification("✨ Uhuu! Trabalho feito!", {
@@ -36,6 +70,7 @@ function enviarNotificacaoParabens() {
     }
 }
 
+// === PROGRESSO E HÁBITOS ===
 function atualizarProgresso() {
     const total = botoes.length;
     const concluidos = Object.values(habitos).filter(status => status === true).length;
@@ -43,7 +78,6 @@ function atualizarProgresso() {
     const porcentagem = (concluidos / total) * 100;
     barraProgresso.style.width = `${porcentagem}%`;
 
-    // Se bateu 100%, tenta mandar a notificação
     if (porcentagem === 100) {
         enviarNotificacaoParabens();
     }
@@ -70,7 +104,6 @@ function zerarHabitos() {
     habitos = {};
     localStorage.removeItem('meusHabitos');
     
-    // Zera a memória de notificação pro próximo dia
     notificouHoje = false;
     localStorage.removeItem('notificouHoje');
 
@@ -104,15 +137,15 @@ function checarResetAutomatico() {
 checarResetAutomatico();
 atualizarProgresso();
 
-// === LÓGICA DO FOOTER DE INSTALAÇÃO (PWA) ===
+// === LÓGICA DO BOTÃO INVISÍVEL DE INSTALAÇÃO (PWA) ===
 let eventoInstalacao;
-const mobileFooter = document.getElementById('mobile-footer');
 const botaoInstalarIcone = document.getElementById('install-icon-btn');
 
 window.addEventListener('beforeinstallprompt', (evento) => {
     evento.preventDefault();
     eventoInstalacao = evento;
-    mobileFooter.style.display = 'flex';
+    // O botão aparece lá na barrinha de baixo!
+    botaoInstalarIcone.style.display = 'inline-block';
 });
 
 botaoInstalarIcone.addEventListener('click', async () => {
@@ -122,20 +155,20 @@ botaoInstalarIcone.addEventListener('click', async () => {
 
     const resultado = await eventoInstalacao.userChoice;
     if (resultado.outcome === 'accepted') {
-        mobileFooter.style.display = 'none';
+        botaoInstalarIcone.style.display = 'none';
     }
 
     eventoInstalacao = null;
 });
 
 window.addEventListener('appinstalled', () => {
-    mobileFooter.style.display = 'none';
+    botaoInstalarIcone.style.display = 'none';
 });
 
 // Registra o Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .catch(erro => console.log('Falha no ajudante invisível', erro));
+            .catch(erro => console.log('Falha no ajudante', erro));
     });
 }

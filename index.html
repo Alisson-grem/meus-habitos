@@ -14,7 +14,11 @@
     <!-- Header exclusivo de PC -->
     <header class="desktop-header">
         <div class="logo">✨ Meus Mini-Hábitos</div>
-        <div class="tip">Seu cantinho de produtividade</div>
+        <div class="header-icons">
+            <button class="icon-btn" id="stats-btn-pc" title="Estatísticas">📈</button>
+            <button class="icon-btn" id="theme-btn-pc" title="Modo Escuro">🌙</button>
+            <button class="icon-btn" id="settings-btn-pc" title="Configurações">⚙️</button>
+        </div>
     </header>
 
     <div class="app-container">
@@ -47,19 +51,29 @@
         </div>
 
         <div class="actions-container">
-            <!-- Botão para notificações -->
             <button id="notify-btn" class="btn-outline">🔔 Ativar Notificações</button>
-
-            <!-- Botão para zerar o dia -->
             <button id="reset-btn" class="btn-secondary">🔄 Zerar o Dia</button>
         </div>
     </div>
 
-    <!-- Footer exclusivo de celular para instalação -->
-    <footer class="mobile-footer" id="mobile-footer" style="display: none;">
-        <button id="install-icon-btn" class="footer-install-btn">
+    <!-- Footer exclusivo de celular (Navegação em Abas) -->
+    <footer class="mobile-footer" id="mobile-footer">
+        <button class="nav-btn active" id="home-btn-mobile">
+            <span class="icon">🏠</span>
+        </button>
+        <button class="nav-btn" id="stats-btn-mobile">
+            <span class="icon">📈</span>
+        </button>
+        <button class="nav-btn" id="theme-btn-mobile">
+            <span class="icon">🌙</span>
+        </button>
+        <button class="nav-btn" id="settings-btn-mobile">
+            <span class="icon">⚙️</span>
+        </button>
+        
+        <!-- Ícone de instalar só aparece quando está no navegador -->
+        <button class="nav-btn install-anim" id="install-icon-btn" style="display: none;">
             <span class="icon">📥</span>
-            <span class="text">Instalar App no Celular</span>
         </button>
     </footer>
 
