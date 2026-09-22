@@ -1,8 +1,40 @@
 const botoes = document.querySelectorAll('.habit-btn');
 const barraProgresso = document.getElementById('progressBar');
 const botaoReset = document.getElementById('reset-btn');
+const botaoNotificacao = document.getElementById('notify-btn');
 
 let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
+let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
+
+// Esconde o botão de notificação se o humano já deu ou negou permissão antes
+if (!("Notification" in window) || Notification.permission === 'granted' || Notification.permission === 'denied') {
+    botaoNotificacao.style.display = 'none';
+}
+
+// Pede permissão quando clica no botão
+botaoNotificacao.addEventListener('click', () => {
+    Notification.requestPermission().then(permissao => {
+        if (permissao === 'granted') {
+            botaoNotificacao.style.display = 'none';
+            new Notification("Hmph!", {
+                body: "Sipah tá de olho nos seus hábitos agora!",
+                icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
+            });
+        }
+    });
+});
+
+// Sipah dispara a notificação se bater 100%
+function enviarNotificacaoParabens() {
+    if ("Notification" in window && Notification.permission === "granted" && !notificouHoje) {
+        new Notification("✨ Uhuu! Trabalho feito!", {
+            body: "Você completou todos os mini-hábitos de hoje. Sipah tá orgulhosa!",
+            icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
+        });
+        notificouHoje = true;
+        localStorage.setItem('notificouHoje', 'true');
+    }
+}
 
 function atualizarProgresso() {
     const total = botoes.length;
@@ -10,6 +42,11 @@ function atualizarProgresso() {
     
     const porcentagem = (concluidos / total) * 100;
     barraProgresso.style.width = `${porcentagem}%`;
+
+    // Se bateu 100%, tenta mandar a notificação
+    if (porcentagem === 100) {
+        enviarNotificacaoParabens();
+    }
 }
 
 botoes.forEach(botao => {
@@ -32,6 +69,11 @@ botoes.forEach(botao => {
 function zerarHabitos() {
     habitos = {};
     localStorage.removeItem('meusHabitos');
+    
+    // Zera a memória de notificação pro próximo dia
+    notificouHoje = false;
+    localStorage.removeItem('notificouHoje');
+
     botoes.forEach(botao => {
         botao.classList.remove('completed');
     });
@@ -70,7 +112,6 @@ const botaoInstalarIcone = document.getElementById('install-icon-btn');
 window.addEventListener('beforeinstallprompt', (evento) => {
     evento.preventDefault();
     eventoInstalacao = evento;
-    // O JS vai tentar mostrar, mas o CSS (com o !important) bloqueia se for PC!
     mobileFooter.style.display = 'flex';
 });
 
@@ -81,10 +122,7 @@ botaoInstalarIcone.addEventListener('click', async () => {
 
     const resultado = await eventoInstalacao.userChoice;
     if (resultado.outcome === 'accepted') {
-        console.log('Usuário aceitou a instalação');
         mobileFooter.style.display = 'none';
-    } else {
-        console.log('Usuário recusou a instalação');
     }
 
     eventoInstalacao = null;
@@ -92,14 +130,12 @@ botaoInstalarIcone.addEventListener('click', async () => {
 
 window.addEventListener('appinstalled', () => {
     mobileFooter.style.display = 'none';
-    console.log('PWA já instalado.');
 });
 
-// Registra o Service Worker para transformar em PWA
+// Registra o Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('App instalado com sucesso!', reg))
-            .catch(erro => console.log('Falha ao instalar o app', erro));
+            .catch(erro => console.log('Falha no ajudante invisível', erro));
     });
 }
