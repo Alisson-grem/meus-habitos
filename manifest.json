@@ -1,0 +1,16 @@
+{
+  "name": "Meus Mini-Hábitos",
+  "short_name": "Hábitos",
+  "description": "Meu dashboard diário de hábitos",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

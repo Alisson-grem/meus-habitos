@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f8f9fa">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Dashboard de Hábitos</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Mini-Hábitos</h1>
+            <p class="subtitle">Seu progresso diário</p>
+        </header>
+        
+        <!-- Barra de progresso -->
+        <div class="progress-wrapper">
+            <div class="progress-track">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- Grade de hábitos -->
+        <div class="habits-list">
+            <button class="habit-btn" data-habit="agua">
+                <span class="icon">💧</span>
+                <span class="text">Beber Água</span>
+            </button>
+            <button class="habit-btn" data-habit="leitura">
+                <span class="icon">📚</span>
+                <span class="text">Ler 10 pág.</span>
+            </button>
+            <button class="habit-btn" data-habit="alongar">
+                <span class="icon">🧘‍♂️</span>
+                <span class="text">Alongar</span>
+            </button>
+        </div>
+
+        <div class="actions-container">
+            <!-- Botão para zerar o dia -->
+            <button id="reset-btn" class="btn-secondary">🔄 Zerar o Dia</button>
+            
+            <!-- Botão de Instalar (vai começar escondido) -->
+            <button id="install-btn" class="btn-primary" style="display: none;">📱 Instalar App</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
