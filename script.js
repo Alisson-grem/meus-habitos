@@ -20,7 +20,6 @@ botoes.forEach(botao => {
     }
 
     botao.addEventListener('click', () => {
-        // Efeitozinho vibratório no celular se tiver suporte!
         if (navigator.vibrate) navigator.vibrate(50);
         
         botao.classList.toggle('completed');
@@ -63,17 +62,19 @@ function checarResetAutomatico() {
 checarResetAutomatico();
 atualizarProgresso();
 
-// === LÓGICA DO BOTÃO DE INSTALAÇÃO (PWA) ===
+// === LÓGICA DO FOOTER DE INSTALAÇÃO (PWA) ===
 let eventoInstalacao;
-const botaoInstalar = document.getElementById('install-btn');
+const mobileFooter = document.getElementById('mobile-footer');
+const botaoInstalarIcone = document.getElementById('install-icon-btn');
 
 window.addEventListener('beforeinstallprompt', (evento) => {
     evento.preventDefault();
     eventoInstalacao = evento;
-    botaoInstalar.style.display = 'block';
+    // O JS vai tentar mostrar, mas o CSS (com o !important) bloqueia se for PC!
+    mobileFooter.style.display = 'flex';
 });
 
-botaoInstalar.addEventListener('click', async () => {
+botaoInstalarIcone.addEventListener('click', async () => {
     if (!eventoInstalacao) return;
 
     eventoInstalacao.prompt();
@@ -81,7 +82,7 @@ botaoInstalar.addEventListener('click', async () => {
     const resultado = await eventoInstalacao.userChoice;
     if (resultado.outcome === 'accepted') {
         console.log('Usuário aceitou a instalação');
-        botaoInstalar.style.display = 'none';
+        mobileFooter.style.display = 'none';
     } else {
         console.log('Usuário recusou a instalação');
     }
@@ -90,7 +91,7 @@ botaoInstalar.addEventListener('click', async () => {
 });
 
 window.addEventListener('appinstalled', () => {
-    botaoInstalar.style.display = 'none';
+    mobileFooter.style.display = 'none';
     console.log('PWA já instalado.');
 });
 

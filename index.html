@@ -11,6 +11,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Header exclusivo de PC (Sipah esconde no celular) -->
+    <header class="desktop-header">
+        <div class="logo">✨ Meus Mini-Hábitos</div>
+        <div class="tip">Seu cantinho de produtividade</div>
+    </header>
+
     <div class="app-container">
         <header class="app-header">
             <h1>Mini-Hábitos</h1>
@@ -43,11 +49,16 @@
         <div class="actions-container">
             <!-- Botão para zerar o dia -->
             <button id="reset-btn" class="btn-secondary">🔄 Zerar o Dia</button>
-            
-            <!-- Botão de Instalar (vai começar escondido) -->
-            <button id="install-btn" class="btn-primary" style="display: none;">📱 Instalar App</button>
         </div>
     </div>
+
+    <!-- Footer exclusivo de celular para instalação -->
+    <footer class="mobile-footer" id="mobile-footer" style="display: none;">
+        <button id="install-icon-btn" class="footer-install-btn">
+            <span class="icon">📥</span>
+            <span class="text">Instalar App no Celular</span>
+        </button>
+    </footer>
 
     <script src="script.js"></script>
 </body>
