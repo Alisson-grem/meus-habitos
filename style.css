@@ -2,7 +2,6 @@
 :root {
     --bg-color: #f8f9fa;
     --app-bg: #ffffff;
-    --primary: #10b981;
     --text-main: #1f2937;
     --text-muted: #6b7280;
     --border-color: #f3f4f6;
@@ -11,7 +10,13 @@
     --float-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* === FEITIÇO DO MODO ESCURO === */
+/* CORES MÁGICAS (Temas) */
+body[data-color="emerald"] { --primary: #10b981; }
+body[data-color="blue"] { --primary: #3b82f6; }
+body[data-color="purple"] { --primary: #8b5cf6; }
+body[data-color="pink"] { --primary: #ec4899; }
+
+/* MODO ESCURO */
 body.dark-mode {
     --bg-color: #121212;
     --app-bg: #1e1e1e;
@@ -38,15 +43,41 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* --- ESTILOS DO HEADER (PC) --- */
-.desktop-header {
-    display: none;
+/* --- HEADER CELULAR --- */
+.mobile-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: var(--app-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    z-index: 1000;
 }
 
-.header-icons {
-    display: flex;
-    gap: 15px;
+.mobile-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-main);
 }
+
+.settings-mobile {
+    position: absolute;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+/* --- HEADER PC --- */
+.desktop-header { display: none; }
+.header-icons { display: flex; gap: 15px; }
 
 .icon-btn {
     background: transparent;
@@ -56,12 +87,9 @@ body {
     transition: transform 0.2s;
     color: var(--text-main);
 }
+.icon-btn:hover { transform: scale(1.1); }
 
-.icon-btn:hover {
-    transform: scale(1.1);
-}
-
-/* --- ESTILOS DO FOOTER (CELULAR) --- */
+/* --- FOOTER CELULAR COM BOTÃO GORDINHO --- */
 .mobile-footer {
     position: fixed;
     bottom: 0;
@@ -74,10 +102,9 @@ body {
     z-index: 1000;
     padding-bottom: env(safe-area-inset-bottom, 15px);
     display: flex;
-    justify-content: space-around; /* Espalha os ícones igual app de verdade */
+    justify-content: space-between;
     align-items: center;
     border-top: 1px solid var(--border-color);
-    transition: background-color 0.3s;
 }
 
 .nav-btn {
@@ -89,23 +116,40 @@ body {
     transition: all 0.2s;
     padding: 10px;
     border-radius: 12px;
+    flex: 1;
 }
 
-.nav-btn.active {
-    color: var(--primary);
-    transform: translateY(-3px);
+.nav-btn.active { color: var(--primary); transform: translateY(-3px); }
+.nav-btn:active { transform: scale(0.9); }
+
+/* Botão Gordinho do Meio */
+.fab-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
 
-.nav-btn:active {
-    transform: scale(0.9);
+.big-add-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-20px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    cursor: pointer;
+    border: 5px solid var(--app-bg);
+    transition: transform 0.2s, background-color 0.3s;
 }
 
-/* Efeito chamativo no botão de baixar */
-.install-anim {
-    color: #3b82f6;
-    animation: bounce 2s infinite;
-}
+.big-add-btn:active { transform: translateY(-15px) scale(0.95); }
 
+.install-anim { color: #3b82f6; animation: bounce 2s infinite; }
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
     40% { transform: translateY(-5px); }
@@ -118,37 +162,18 @@ body {
     width: 100%;
     min-height: 100vh;
     padding: 30px 20px;
+    padding-top: 80px; /* Dá espaço pro mobile header! */
     padding-bottom: 90px; 
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    transition: background-color 0.3s;
 }
 
-.app-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
+.app-header { text-align: center; margin-bottom: 30px; }
+.app-header h1 { font-size: 28px; font-weight: 800; margin: 0 0 5px 0; letter-spacing: -0.5px; }
+.app-header .subtitle { margin: 0; color: var(--text-muted); font-size: 15px; }
 
-.app-header h1 {
-    font-size: 28px;
-    font-weight: 800;
-    margin: 0 0 5px 0;
-    color: var(--text-main);
-    letter-spacing: -0.5px;
-}
-
-.app-header .subtitle {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.progress-wrapper {
-    margin-bottom: 35px;
-}
-
+.progress-wrapper { margin-bottom: 35px; }
 .progress-track {
     background: var(--border-color);
     border-radius: 100px;
@@ -157,21 +182,15 @@ body {
     overflow: hidden;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
-
 .progress-fill {
-    background: linear-gradient(135deg, #34d399, var(--primary));
+    background: var(--primary);
     height: 100%;
     width: 0%;
     border-radius: 100px;
-    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s;
 }
 
-.habits-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex-grow: 1;
-}
+.habits-list { display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
 
 .habit-btn {
     display: flex;
@@ -185,42 +204,23 @@ body {
     touch-action: manipulation;
     box-shadow: var(--card-shadow);
 }
-
-.habit-btn .icon {
-    font-size: 24px;
-    margin-right: 15px;
-    transition: transform 0.3s ease;
-}
-
-.habit-btn .text {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--text-main);
-}
+.habit-btn .icon { font-size: 24px; margin-right: 15px; transition: transform 0.3s ease; }
+.habit-btn .text { font-size: 17px; font-weight: 600; color: var(--text-main); }
 
 .habit-btn.completed {
     background: var(--primary);
     border-color: var(--primary);
     transform: scale(1.02);
-    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
 }
+.habit-btn.completed .text { color: white; }
+.habit-btn.completed .icon { transform: scale(1.2) rotate(10deg); }
 
-.habit-btn.completed .text {
-    color: white;
-}
+.actions-container { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
 
-.habit-btn.completed .icon {
-    transform: scale(1.2) rotate(10deg);
-}
+.desktop-only { display: none; }
 
-.actions-container {
-    margin-top: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.btn-secondary, .btn-outline {
+.btn-secondary, .btn-outline, .btn-primary {
     padding: 16px 20px;
     border-radius: 16px;
     font-size: 16px;
@@ -229,73 +229,85 @@ body {
     transition: all 0.2s active;
     touch-action: manipulation;
     width: 100%;
-}
-
-.btn-secondary {
     border: none;
-    background-color: #fee2e2;
-    color: #ef4444;
 }
+.btn-secondary { background-color: #fee2e2; color: #ef4444; }
+.btn-secondary:active { transform: scale(0.98); }
+.btn-primary { background-color: var(--primary); color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
 
-.btn-secondary:active {
-    background-color: #fca5a5;
-    transform: scale(0.98);
+/* --- MODAIS MÁGICOS DA SIPAH --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
+.modal-overlay.show { display: flex; opacity: 1; }
 
-.btn-outline {
-    background-color: transparent;
-    border: 2px solid #8b5cf6;
-    color: #8b5cf6;
+.modal-content {
+    background: var(--app-bg);
+    padding: 30px;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 350px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+.modal-overlay.show .modal-content { transform: scale(1); }
 
-.btn-outline:active {
-    background-color: #ede9fe;
-    transform: scale(0.98);
+.modal-content h3 { margin-top: 0; font-size: 22px; color: var(--text-main); }
+
+.theme-selector { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+.theme-color-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 3px solid var(--app-bg);
+    box-shadow: 0 0 0 2px var(--border-color);
+    cursor: pointer;
+    transition: transform 0.2s;
 }
+.theme-color-btn:hover { transform: scale(1.2); }
 
-/* MAGIA DO PC */
+.input-group { text-align: left; margin-bottom: 15px; }
+.input-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); }
+.input-group input {
+    width: 100%; padding: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--btn-bg);
+    color: var(--text-main);
+    font-size: 16px;
+    box-sizing: border-box;
+}
+.modal-buttons { display: flex; gap: 10px; margin-top: 25px; }
+
+
+/* --- MAGIA DO PC --- */
 @media screen and (min-width: 600px) {
-    body {
-        background-color: var(--bg-color); 
-        padding-top: 60px;
-    }
-
+    body { background-color: var(--bg-color); padding-top: 60px; }
+    .desktop-only { display: block; }
+    .mobile-header { display: none; }
     .desktop-header {
-        display: flex;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 60px;
-        background: var(--app-bg);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 40px;
-        box-sizing: border-box;
-        z-index: 1000;
-        border-bottom: 1px solid var(--border-color);
-        transition: background-color 0.3s;
+        display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+        background: var(--app-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        align-items: center; justify-content: space-between; padding: 0 40px;
+        box-sizing: border-box; z-index: 1000; border-bottom: 1px solid var(--border-color);
     }
-
-    .desktop-header .logo {
-        font-size: 20px;
-        font-weight: 800;
-        color: var(--primary);
-    }
-
-    .mobile-footer {
-        display: none !important;
-    }
-
+    .desktop-header .logo { font-size: 20px; font-weight: 800; color: var(--primary); }
+    .mobile-footer { display: none !important; }
     .app-container {
-        max-width: 400px;
-        min-height: auto;
-        padding: 40px 30px;
-        padding-bottom: 40px; 
-        border-radius: 32px;
-        box-shadow: var(--float-shadow);
-        border: 1px solid var(--border-color);
-        margin-top: 20px;
+        max-width: 400px; min-height: auto; padding: 40px 30px;
+        border-radius: 32px; box-shadow: var(--float-shadow);
+        border: 1px solid var(--border-color); margin-top: 20px;
     }
 }
