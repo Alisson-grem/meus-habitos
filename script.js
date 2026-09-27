@@ -4,6 +4,9 @@ const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
 const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
+// Som com arquivo real que o HTML pega
+const somMoeda = document.getElementById('coin-sound');
+
 // Variáveis da Ofensiva
 let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
 let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
@@ -26,31 +29,14 @@ toggleSoundBtn.addEventListener('click', () => {
     atualizarBotaoSom();
 });
 
-// A Magia do Som sem arquivos! (Plim!)
+// Som mais robusto, navegador chato não pode bloquear
 function tocarSomMoeda() {
     if (!somLigado) return;
     try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(987.77, ctx.currentTime); // Nota B5
-        osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1); // Nota E6
-        
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
+        somMoeda.currentTime = 0; // Volta pro começo se clicar rápido
+        somMoeda.play().catch(e => console.log('Bloqueado pelo navegador:', e));
     } catch (e) {
-        console.log('Navegador não deixou a Sipah fazer som', e);
+        console.log('Erro de som:', e);
     }
 }
 
