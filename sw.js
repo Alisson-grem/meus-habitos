@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habitos-v8';
+const CACHE_NAME = 'habitos-v9';
 const arquivosParaSalvar = [
     './',
     './index.html',
