@@ -75,6 +75,27 @@
         </button>
     </footer>
 
+    <!-- MODAL: Estatísticas (Foguinho da Sipah 🔥) -->
+    <div class="modal-overlay" id="stats-modal">
+        <div class="modal-content">
+            <h3>🔥 Sua Ofensiva</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-top: -10px;">Não quebre a corrente!</p>
+            
+            <div class="streak-circle">
+                <span class="streak-fire-icon">🔥</span>
+                <h2 id="current-streak-display">0</h2>
+                <p>dias</p>
+            </div>
+            
+            <div class="stats-footer">
+                <span>👑 Recorde:</span>
+                <span id="best-streak-display">0 dias</span>
+            </div>
+            
+            <button class="btn-primary" id="close-stats-btn" style="margin-top: 25px;">Fechar</button>
+        </div>
+    </div>
+
     <!-- MODAL: Configurações & Temas & Lixeira -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-content">

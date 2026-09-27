@@ -4,6 +4,11 @@ const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
 const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
+// Variáveis da Ofensiva (Foguinho 🔥)
+let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
+let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
+let ultimoDiaCompleto = localStorage.getItem('ultimoDiaCompleto'); 
+
 let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
     { id: 'agua', icon: '💧', text: 'Beber Água' },
     { id: 'leitura', icon: '📚', text: 'Ler 10 pág.' },
@@ -12,6 +17,24 @@ let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
 
 let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
 let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
+
+// VERIFICAR OFENSIVA (Roda logo que o app abre)
+function verificarOfensiva() {
+    const hoje = new Date().toDateString();
+    const ontem = new Date(Date.now() - 86400000).toDateString(); // Dia anterior
+
+    // Se a pessoa não completou ontem E não completou hoje, o fogo apaga!
+    if (ultimoDiaCompleto !== hoje && ultimoDiaCompleto !== ontem && ultimoDiaCompleto !== null) {
+        streak = 0;
+        localStorage.setItem('streakAtual', streak);
+    }
+    
+    // Atualiza os números da telinha de status
+    document.getElementById('current-streak-display').innerText = streak;
+    document.getElementById('best-streak-display').innerText = melhorStreak + ' dias';
+}
+verificarOfensiva();
+
 
 function renderizarHabitos() {
     listaHabitosDiv.innerHTML = ''; 
@@ -73,7 +96,32 @@ function atualizarProgresso() {
     const concluidos = Object.values(habitos).filter(status => status === true).length;
     const porcentagem = (concluidos / total) * 100;
     barraProgresso.style.width = `${porcentagem}%`;
-    if (porcentagem === 100) enviarNotificacaoParabens();
+    
+    // MAGIA DO FOGO: Bateu 100%?
+    if (porcentagem === 100) {
+        const hoje = new Date().toDateString();
+        const ontem = new Date(Date.now() - 86400000).toDateString();
+        
+        // Só conta 1 vez por dia
+        if (ultimoDiaCompleto !== hoje) {
+            // Se o último foi ontem (ou se for a primeira vez), a corrente aumenta!
+            if (ultimoDiaCompleto === ontem || ultimoDiaCompleto === null || streak === 0) {
+                streak++;
+            } else {
+                streak = 1; // Puxa, falhou dias atrás. Recomeça do 1.
+            }
+            
+            // Bateu o recorde?
+            if (streak > melhorStreak) melhorStreak = streak;
+            
+            ultimoDiaCompleto = hoje;
+            localStorage.setItem('streakAtual', streak);
+            localStorage.setItem('streakMelhor', melhorStreak);
+            localStorage.setItem('ultimoDiaCompleto', ultimoDiaCompleto);
+            verificarOfensiva(); // Atualiza a telinha lá
+        }
+        enviarNotificacaoParabens();
+    }
 }
 
 function enviarNotificacaoParabens() {
@@ -96,16 +144,26 @@ botaoNotificacao.addEventListener('click', () => {
     });
 });
 
+// === MODAIS ===
 const modalSettings = document.getElementById('settings-modal');
 const modalAddHabit = document.getElementById('add-habit-modal');
+const modalStats = document.getElementById('stats-modal');
 
+// Configurações
 document.getElementById('settings-btn-pc').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('settings-btn-mobile').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('close-settings-btn').addEventListener('click', () => modalSettings.classList.remove('show'));
 
+// Adicionar Hábito
 document.getElementById('add-btn-mobile').addEventListener('click', () => modalAddHabit.classList.add('show'));
 document.getElementById('add-btn-pc').addEventListener('click', () => modalAddHabit.classList.add('show'));
 document.getElementById('cancel-habit-btn').addEventListener('click', () => modalAddHabit.classList.remove('show'));
+
+// Estatísticas (O foguinho 🔥)
+document.getElementById('stats-btn-pc').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
+document.getElementById('stats-btn-mobile').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
+document.getElementById('close-stats-btn').addEventListener('click', () => modalStats.classList.remove('show'));
+
 
 document.getElementById('save-habit-btn').addEventListener('click', () => {
     const icon = document.getElementById('habit-emoji-input').value || '⭐';
@@ -193,10 +251,6 @@ botaoInstalarIcone.addEventListener('click', async () => {
     eventoInstalacao = null;
 });
 window.addEventListener('appinstalled', () => { botaoInstalarIcone.style.display = 'none'; });
-
-const alertaSipah = () => alert("Sipah ainda vai fazer as estatísticas! Calma!");
-document.getElementById('stats-btn-pc').addEventListener('click', alertaSipah);
-document.getElementById('stats-btn-mobile').addEventListener('click', alertaSipah);
 
 renderizarHabitos();
 

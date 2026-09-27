@@ -117,6 +117,25 @@ body {
 .delete-btn { background: transparent; border: none; color: #ef4444; font-size: 20px; cursor: pointer; transition: transform 0.2s; padding: 5px; }
 .delete-btn:hover { transform: scale(1.2); }
 
+/* FOGUINHO DAS ESTATÍSTICAS 🔥 */
+.streak-circle {
+    margin: 20px auto; width: 150px; height: 150px; border-radius: 50%;
+    border: 8px solid var(--primary); display: flex; flex-direction: column;
+    justify-content: center; align-items: center; background: var(--btn-bg);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: border-color 0.3s;
+}
+.streak-fire-icon { font-size: 40px; margin-bottom: -5px; animation: pulseFire 1.5s infinite; }
+.streak-circle h2 { font-size: 44px; margin: 0; color: var(--text-main); font-weight: 900; line-height: 1; }
+.streak-circle p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px; font-weight: 700; text-transform: uppercase; }
+.stats-footer { margin-top: 15px; font-size: 16px; font-weight: 600; color: var(--text-muted); display: flex; justify-content: center; gap: 8px; }
+.stats-footer span:last-child { color: var(--primary); font-weight: 800; transition: color 0.3s; }
+
+@keyframes pulseFire { 
+    0% { transform: scale(1); } 
+    50% { transform: scale(1.15) rotate(5deg); } 
+    100% { transform: scale(1); } 
+}
+
 /* --- PC --- */
 @media screen and (min-width: 600px) {
     body { background-color: var(--bg-color); padding-top: 60px; }
