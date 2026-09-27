@@ -4,10 +4,55 @@ const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
 const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
-// Variáveis da Ofensiva (Foguinho 🔥)
+// Variáveis da Ofensiva
 let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
 let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
 let ultimoDiaCompleto = localStorage.getItem('ultimoDiaCompleto'); 
+
+// Variáveis de Som da Sipah
+let somLigado = localStorage.getItem('somLigado') !== 'false';
+const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+
+function atualizarBotaoSom() {
+    toggleSoundBtn.innerText = somLigado ? 'Ligado' : 'Desligado';
+    toggleSoundBtn.style.borderColor = somLigado ? 'var(--primary)' : 'var(--text-muted)';
+    toggleSoundBtn.style.color = somLigado ? 'var(--primary)' : 'var(--text-muted)';
+}
+atualizarBotaoSom();
+
+toggleSoundBtn.addEventListener('click', () => {
+    somLigado = !somLigado;
+    localStorage.setItem('somLigado', somLigado);
+    atualizarBotaoSom();
+});
+
+// A Magia do Som sem arquivos! (Plim!)
+function tocarSomMoeda() {
+    if (!somLigado) return;
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, ctx.currentTime); // Nota B5
+        osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.1); // Nota E6
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+        console.log('Navegador não deixou a Sipah fazer som', e);
+    }
+}
 
 let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
     { id: 'agua', icon: '💧', text: 'Beber Água' },
@@ -18,23 +63,17 @@ let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
 let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
 let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
 
-// VERIFICAR OFENSIVA (Roda logo que o app abre)
 function verificarOfensiva() {
     const hoje = new Date().toDateString();
-    const ontem = new Date(Date.now() - 86400000).toDateString(); // Dia anterior
-
-    // Se a pessoa não completou ontem E não completou hoje, o fogo apaga!
+    const ontem = new Date(Date.now() - 86400000).toDateString();
     if (ultimoDiaCompleto !== hoje && ultimoDiaCompleto !== ontem && ultimoDiaCompleto !== null) {
         streak = 0;
         localStorage.setItem('streakAtual', streak);
     }
-    
-    // Atualiza os números da telinha de status
     document.getElementById('current-streak-display').innerText = streak;
     document.getElementById('best-streak-display').innerText = melhorStreak + ' dias';
 }
 verificarOfensiva();
-
 
 function renderizarHabitos() {
     listaHabitosDiv.innerHTML = ''; 
@@ -42,15 +81,25 @@ function renderizarHabitos() {
         const btn = document.createElement('button');
         btn.className = 'habit-btn';
         btn.setAttribute('data-habit', habito.id);
+        
         if (habitos[habito.id]) btn.classList.add('completed');
+        
         btn.innerHTML = `<span class="icon">${habito.icon}</span><span class="text">${habito.text}</span>`;
+        
         btn.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(50);
+            
+            // Toca som APENAS quando for completar (não quando tirar)
+            if (!btn.classList.contains('completed')) {
+                tocarSomMoeda();
+            }
+            
             btn.classList.toggle('completed');
             habitos[habito.id] = btn.classList.contains('completed');
             localStorage.setItem('meusHabitos', JSON.stringify(habitos));
             atualizarProgresso();
         });
+        
         listaHabitosDiv.appendChild(btn);
     });
     atualizarProgresso();
@@ -97,28 +146,23 @@ function atualizarProgresso() {
     const porcentagem = (concluidos / total) * 100;
     barraProgresso.style.width = `${porcentagem}%`;
     
-    // MAGIA DO FOGO: Bateu 100%?
     if (porcentagem === 100) {
         const hoje = new Date().toDateString();
         const ontem = new Date(Date.now() - 86400000).toDateString();
         
-        // Só conta 1 vez por dia
         if (ultimoDiaCompleto !== hoje) {
-            // Se o último foi ontem (ou se for a primeira vez), a corrente aumenta!
             if (ultimoDiaCompleto === ontem || ultimoDiaCompleto === null || streak === 0) {
                 streak++;
             } else {
-                streak = 1; // Puxa, falhou dias atrás. Recomeça do 1.
+                streak = 1; 
             }
-            
-            // Bateu o recorde?
             if (streak > melhorStreak) melhorStreak = streak;
             
             ultimoDiaCompleto = hoje;
             localStorage.setItem('streakAtual', streak);
             localStorage.setItem('streakMelhor', melhorStreak);
             localStorage.setItem('ultimoDiaCompleto', ultimoDiaCompleto);
-            verificarOfensiva(); // Atualiza a telinha lá
+            verificarOfensiva(); 
         }
         enviarNotificacaoParabens();
     }
@@ -149,21 +193,17 @@ const modalSettings = document.getElementById('settings-modal');
 const modalAddHabit = document.getElementById('add-habit-modal');
 const modalStats = document.getElementById('stats-modal');
 
-// Configurações
 document.getElementById('settings-btn-pc').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('settings-btn-mobile').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('close-settings-btn').addEventListener('click', () => modalSettings.classList.remove('show'));
 
-// Adicionar Hábito
 document.getElementById('add-btn-mobile').addEventListener('click', () => modalAddHabit.classList.add('show'));
 document.getElementById('add-btn-pc').addEventListener('click', () => modalAddHabit.classList.add('show'));
 document.getElementById('cancel-habit-btn').addEventListener('click', () => modalAddHabit.classList.remove('show'));
 
-// Estatísticas (O foguinho 🔥)
 document.getElementById('stats-btn-pc').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
 document.getElementById('stats-btn-mobile').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
 document.getElementById('close-stats-btn').addEventListener('click', () => modalStats.classList.remove('show'));
-
 
 document.getElementById('save-habit-btn').addEventListener('click', () => {
     const icon = document.getElementById('habit-emoji-input').value || '⭐';

@@ -75,7 +75,7 @@
         </button>
     </footer>
 
-    <!-- MODAL: Estatísticas (Foguinho da Sipah 🔥) -->
+    <!-- MODAL: Estatísticas -->
     <div class="modal-overlay" id="stats-modal">
         <div class="modal-content">
             <h3>🔥 Sua Ofensiva</h3>
@@ -96,11 +96,10 @@
         </div>
     </div>
 
-    <!-- MODAL: Configurações & Temas & Lixeira -->
+    <!-- MODAL: Configurações -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-content">
             <h3>🎨 Personalizar Tema</h3>
-            <p>Escolha a cor da sua magia:</p>
             <div class="theme-selector">
                 <button class="theme-color-btn" data-setcolor="emerald" style="background: #10b981;"></button>
                 <button class="theme-color-btn" data-setcolor="blue" style="background: #3b82f6;"></button>
@@ -108,8 +107,14 @@
                 <button class="theme-color-btn" data-setcolor="pink" style="background: #ec4899;"></button>
             </div>
             
-            <h3 style="margin-top: 30px; font-size: 18px;">🗑️ Gerenciar Hábitos</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-top: -10px;">Apague os hábitos que não quer mais:</p>
+            <!-- CONTROLE DE SOM DA SIPAH -->
+            <h3 style="margin-top: 30px; font-size: 18px;">⚙️ Preferências</h3>
+            <div class="settings-row">
+                <span>🔊 Efeitos Sonoros</span>
+                <button id="toggle-sound-btn" class="btn-outline" style="padding: 8px 12px; width: auto; font-size: 14px;">Ligado</button>
+            </div>
+
+            <h3 style="margin-top: 20px; font-size: 18px;">🗑️ Gerenciar Hábitos</h3>
             <div id="settings-habits-list" class="settings-habits-list">
                 <!-- A lista de hábitos para apagar entra aqui -->
             </div>

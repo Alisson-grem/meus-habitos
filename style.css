@@ -110,8 +110,14 @@ body {
 .input-group input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--border-color); background: var(--btn-bg); color: var(--text-main); font-size: 16px; box-sizing: border-box; }
 .modal-buttons { display: flex; gap: 10px; margin-top: 25px; }
 
-/* Lista de Hábitos p/ Excluir */
-.settings-habits-list { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+/* Opções das Configurações */
+.settings-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; padding: 10px 15px; background: var(--btn-bg);
+    border: 1px solid var(--border-color); border-radius: 12px;
+    color: var(--text-main); font-weight: 500; font-size: 15px;
+}
+.settings-habits-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
 .delete-habit-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: var(--btn-bg); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); }
 .delete-habit-item span { font-weight: 500; display: flex; align-items: center; gap: 8px;}
 .delete-btn { background: transparent; border: none; color: #ef4444; font-size: 20px; cursor: pointer; transition: transform 0.2s; padding: 5px; }
