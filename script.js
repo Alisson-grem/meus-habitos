@@ -3,6 +3,7 @@ const listaHabitosDiv = document.getElementById('habits-list');
 const barraProgresso = document.getElementById('progressBar');
 const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
+const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
 // Carrega os hábitos salvos ou cria os 3 padrões se tiver vazio
 let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
@@ -11,20 +12,18 @@ let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
     { id: 'alongar', icon: '🧘‍♂️', text: 'Alongar' }
 ];
 
-// O status de "foi feito hoje ou não"
 let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
 let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
 
-// === RENDERIZAR HÁBITOS NA TELA ===
+// === RENDERIZAR HÁBITOS NA TELA PRINCIPAL ===
 function renderizarHabitos() {
-    listaHabitosDiv.innerHTML = ''; // Limpa a tela
+    listaHabitosDiv.innerHTML = ''; 
     
     listaHabitos.forEach(habito => {
         const btn = document.createElement('button');
         btn.className = 'habit-btn';
         btn.setAttribute('data-habit', habito.id);
         
-        // Se já foi feito, pinta de verde
         if (habitos[habito.id]) {
             btn.classList.add('completed');
         }
@@ -34,7 +33,6 @@ function renderizarHabitos() {
             <span class="text">${habito.text}</span>
         `;
 
-        // Ação de clique
         btn.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(50);
             
@@ -47,6 +45,51 @@ function renderizarHabitos() {
         listaHabitosDiv.appendChild(btn);
     });
     atualizarProgresso();
+    renderizarListaExcluir(); // Magia nova da Sipah!
+}
+
+// === RENDERIZAR LISTA DE EXCLUIR (Nas Configurações) ===
+function renderizarListaExcluir() {
+    settingsHabitsListDiv.innerHTML = '';
+    
+    if (listaHabitos.length === 0) {
+        settingsHabitsListDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">Você não tem nenhum hábito para apagar.</p>';
+        return;
+    }
+
+    listaHabitos.forEach(habito => {
+        const div = document.createElement('div');
+        div.className = 'delete-habit-item';
+        div.innerHTML = `
+            <span>${habito.icon} ${habito.text}</span>
+            <button class="delete-btn" title="Apagar hábito">🗑️</button>
+        `;
+
+        // O botão da lixeirinha!
+        const deleteBtn = div.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', () => {
+            if(confirm(`Tem certeza que quer jogar '${habito.text}' no lixo, humano?`)) {
+                excluirHabito(habito.id);
+            }
+        });
+
+        settingsHabitsListDiv.appendChild(div);
+    });
+}
+
+// === EXCLUIR HÁBITO ===
+function excluirHabito(idParaApagar) {
+    // Tira da lista principal
+    listaHabitos = listaHabitos.filter(habito => habito.id !== idParaApagar);
+    localStorage.setItem('listaHabitosConfig', JSON.stringify(listaHabitos));
+
+    // Apaga o registro dele de "concluído" também
+    if (habitos[idParaApagar] !== undefined) {
+        delete habitos[idParaApagar];
+        localStorage.setItem('meusHabitos', JSON.stringify(habitos));
+    }
+
+    renderizarHabitos();
 }
 
 // === PROGRESSO E NOTIFICAÇÕES ===
@@ -94,17 +137,14 @@ botaoNotificacao.addEventListener('click', () => {
 const modalSettings = document.getElementById('settings-modal');
 const modalAddHabit = document.getElementById('add-habit-modal');
 
-// Abrir Configurações
 document.getElementById('settings-btn-pc').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('settings-btn-mobile').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('close-settings-btn').addEventListener('click', () => modalSettings.classList.remove('show'));
 
-// Abrir Adicionar Hábito
 document.getElementById('add-btn-mobile').addEventListener('click', () => modalAddHabit.classList.add('show'));
 document.getElementById('add-btn-pc').addEventListener('click', () => modalAddHabit.classList.add('show'));
 document.getElementById('cancel-habit-btn').addEventListener('click', () => modalAddHabit.classList.remove('show'));
 
-// Salvar Novo Hábito
 document.getElementById('save-habit-btn').addEventListener('click', () => {
     const icon = document.getElementById('habit-emoji-input').value || '⭐';
     const text = document.getElementById('habit-name-input').value;
@@ -114,11 +154,10 @@ document.getElementById('save-habit-btn').addEventListener('click', () => {
         return;
     }
 
-    const id = 'hab_' + Date.now(); // Gera um ID único
+    const id = 'hab_' + Date.now(); 
     listaHabitos.push({ id, icon, text });
     localStorage.setItem('listaHabitosConfig', JSON.stringify(listaHabitos));
     
-    // Limpa o form e fecha
     document.getElementById('habit-name-input').value = '';
     modalAddHabit.classList.remove('show');
     
@@ -131,7 +170,6 @@ let isDark = localStorage.getItem('darkMode') === 'true';
 let corTema = localStorage.getItem('corTema') || 'emerald';
 
 function aplicarTema() {
-    // Escuro ou Claro
     if (isDark) {
         document.body.classList.add('dark-mode');
         document.getElementById('theme-btn-pc').innerText = '☀️';
@@ -141,11 +179,10 @@ function aplicarTema() {
         document.getElementById('theme-btn-pc').innerText = '🌙';
         document.getElementById('theme-btn-mobile').querySelector('.icon').innerText = '🌙';
     }
-    // Cor Principal
     document.body.setAttribute('data-color', corTema);
 }
 
-aplicarTema(); // Aplica ao iniciar
+aplicarTema();
 
 function alternarDark() {
     isDark = !isDark;
@@ -155,7 +192,6 @@ function alternarDark() {
 document.getElementById('theme-btn-pc').addEventListener('click', alternarDark);
 document.getElementById('theme-btn-mobile').addEventListener('click', alternarDark);
 
-// Botões de cor do Modal
 document.querySelectorAll('.theme-color-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         corTema = e.target.getAttribute('data-setcolor');
@@ -171,7 +207,7 @@ function zerarHabitos() {
     localStorage.removeItem('meusHabitos');
     notificouHoje = false;
     localStorage.removeItem('notificouHoje');
-    renderizarHabitos(); // Atualiza a tela
+    renderizarHabitos();
 }
 
 botaoReset.addEventListener('click', () => {
@@ -193,7 +229,7 @@ function checarResetAutomatico() {
 checarResetAutomatico();
 
 
-// === LÓGICA DO BOTÃO DE INSTALAÇÃO (PWA) ===
+// === LÓGICA DO BOTÃO INVISÍVEL DE INSTALAÇÃO (PWA) ===
 let eventoInstalacao;
 const botaoInstalarIcone = document.getElementById('install-icon-btn');
 
@@ -217,15 +253,12 @@ window.addEventListener('appinstalled', () => {
     botaoInstalarIcone.style.display = 'none';
 });
 
-// Estatísticas (Botão Fantasma)
 const alertaSipah = () => alert("Hmph! Sipah ainda vai fazer as estatísticas! Calma!");
 document.getElementById('stats-btn-pc').addEventListener('click', alertaSipah);
 document.getElementById('stats-btn-mobile').addEventListener('click', alertaSipah);
 
-// Inicia as engrenagens
 renderizarHabitos();
 
-// Registra o Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
