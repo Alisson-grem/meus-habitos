@@ -4,8 +4,7 @@ const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
 const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
-// === MAGIA DO SOM LOCAL (Brave não pode bloquear!) ===
-// Humaninho, você precisa colocar o arquivo moeda.mp3 na mesma pasta!
+// Som Local
 const somMoeda = new Audio('./moeda.mp3');
 
 let somLigado = localStorage.getItem('somLigado') !== 'false';
@@ -29,15 +28,13 @@ function tocarSomMoeda() {
     try {
         somMoeda.volume = 1.0;
         somMoeda.currentTime = 0; 
-        somMoeda.play().catch(e => {
-            console.log('O Leão do Brave bloqueou ou você esqueceu de baixar o mp3!', e);
-        });
+        somMoeda.play().catch(e => console.log('Som bloqueado', e));
     } catch (e) {
         console.log('Erro de som:', e);
     }
 }
 
-// === RESTO DO CÓDIGO ===
+// Variáveis da Ofensiva
 let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
 let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
 let ultimoDiaCompleto = localStorage.getItem('ultimoDiaCompleto'); 
@@ -50,6 +47,9 @@ let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
 
 let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
 let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
+
+// Variável para saber se estamos Editando ou Criando um hábito
+let habitoEmEdicaoId = null;
 
 function verificarOfensiva() {
     const hoje = new Date().toDateString();
@@ -77,7 +77,6 @@ function renderizarHabitos() {
         btn.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(50);
             
-            // Toca som APENAS quando for completar
             if (!btn.classList.contains('completed')) {
                 tocarSomMoeda();
             }
@@ -91,10 +90,11 @@ function renderizarHabitos() {
         listaHabitosDiv.appendChild(btn);
     });
     atualizarProgresso();
-    renderizarListaExcluir(); 
+    renderizarListaGerenciar(); 
 }
 
-function renderizarListaExcluir() {
+// === NOVO: Lista de Gerenciar (Editar e Excluir) ===
+function renderizarListaGerenciar() {
     settingsHabitsListDiv.innerHTML = '';
     if (listaHabitos.length === 0) {
         settingsHabitsListDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">Nenhum hábito na lista.</p>';
@@ -102,12 +102,23 @@ function renderizarListaExcluir() {
     }
     listaHabitos.forEach(habito => {
         const div = document.createElement('div');
-        div.className = 'delete-habit-item';
+        div.className = 'manage-habit-item';
         div.innerHTML = `
             <span>${habito.icon} ${habito.text}</span>
-            <button class="delete-btn" title="Apagar hábito">🗑️</button>
+            <div class="manage-actions">
+                <button class="manage-btn edit" title="Editar hábito">✏️</button>
+                <button class="manage-btn delete" title="Apagar hábito">🗑️</button>
+            </div>
         `;
-        const deleteBtn = div.querySelector('.delete-btn');
+        
+        // Botão de Editar
+        const editBtn = div.querySelector('.edit');
+        editBtn.addEventListener('click', () => {
+            prepararEdicaoHabito(habito);
+        });
+
+        // Botão de Excluir
+        const deleteBtn = div.querySelector('.delete');
         deleteBtn.addEventListener('click', () => {
             if(confirm(`Jogar '${habito.text}' no lixo, humano?`)) {
                 excluirHabito(habito.id);
@@ -185,26 +196,59 @@ document.getElementById('settings-btn-pc').addEventListener('click', () => modal
 document.getElementById('settings-btn-mobile').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('close-settings-btn').addEventListener('click', () => modalSettings.classList.remove('show'));
 
-document.getElementById('add-btn-mobile').addEventListener('click', () => modalAddHabit.classList.add('show'));
-document.getElementById('add-btn-pc').addEventListener('click', () => modalAddHabit.classList.add('show'));
+// Função para Resetar a tela de Criação (Para não virar Edição sem querer)
+function prepararCriacaoHabito() {
+    habitoEmEdicaoId = null;
+    document.getElementById('modal-habit-title').innerText = "✨ Novo Hábito";
+    document.getElementById('habit-emoji-input').value = "⭐";
+    document.getElementById('habit-name-input').value = "";
+    modalAddHabit.classList.add('show');
+}
+
+// Função para Abrir a tela já no Modo de Edição
+function prepararEdicaoHabito(habito) {
+    habitoEmEdicaoId = habito.id;
+    document.getElementById('modal-habit-title').innerText = "✏️ Editar Hábito";
+    document.getElementById('habit-emoji-input').value = habito.icon;
+    document.getElementById('habit-name-input').value = habito.text;
+    modalAddHabit.classList.add('show');
+}
+
+// Botões de Criar Hábito Normal
+document.getElementById('add-btn-mobile').addEventListener('click', prepararCriacaoHabito);
+document.getElementById('add-btn-pc').addEventListener('click', prepararCriacaoHabito);
 document.getElementById('cancel-habit-btn').addEventListener('click', () => modalAddHabit.classList.remove('show'));
 
 document.getElementById('stats-btn-pc').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
 document.getElementById('stats-btn-mobile').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
 document.getElementById('close-stats-btn').addEventListener('click', () => modalStats.classList.remove('show'));
 
+// === O BOTÃO DE SALVAR MAGIA (Cria ou Edita!) ===
 document.getElementById('save-habit-btn').addEventListener('click', () => {
     const icon = document.getElementById('habit-emoji-input').value || '⭐';
     const text = document.getElementById('habit-name-input').value;
     if (text.trim() === '') { alert("Escreve o nome do hábito!"); return; }
-    const id = 'hab_' + Date.now(); 
-    listaHabitos.push({ id, icon, text });
+    
+    if (habitoEmEdicaoId !== null) {
+        // Sipah está Editando
+        const index = listaHabitos.findIndex(h => h.id === habitoEmEdicaoId);
+        if (index !== -1) {
+            listaHabitos[index].icon = icon;
+            listaHabitos[index].text = text;
+        }
+        habitoEmEdicaoId = null; // Reseta
+    } else {
+        // Sipah está Criando do zero
+        const id = 'hab_' + Date.now(); 
+        listaHabitos.push({ id, icon, text });
+    }
+
     localStorage.setItem('listaHabitosConfig', JSON.stringify(listaHabitos));
-    document.getElementById('habit-name-input').value = '';
     modalAddHabit.classList.remove('show');
     renderizarHabitos();
 });
 
+// Temas
 let isDark = localStorage.getItem('darkMode') === 'true';
 let corTema = localStorage.getItem('corTema') || 'emerald';
 

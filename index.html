@@ -107,26 +107,25 @@
                 <button class="theme-color-btn" data-setcolor="pink" style="background: #ec4899;"></button>
             </div>
             
-            <!-- CONTROLE DE SOM DA SIPAH -->
             <h3 style="margin-top: 30px; font-size: 18px;">⚙️ Preferências</h3>
             <div class="settings-row">
                 <span>🔊 Efeitos Sonoros</span>
                 <button id="toggle-sound-btn" class="btn-outline" style="padding: 8px 12px; width: auto; font-size: 14px;">Ligado</button>
             </div>
 
-            <h3 style="margin-top: 20px; font-size: 18px;">🗑️ Gerenciar Hábitos</h3>
+            <h3 style="margin-top: 20px; font-size: 18px;">✏️ Gerenciar Hábitos</h3>
             <div id="settings-habits-list" class="settings-habits-list">
-                <!-- A lista de hábitos para apagar entra aqui -->
+                <!-- A lista de hábitos para editar e apagar entra aqui -->
             </div>
             
             <button class="btn-primary" id="close-settings-btn" style="margin-top: 20px;">Fechar</button>
         </div>
     </div>
 
-    <!-- MODAL: Adicionar Novo Hábito -->
+    <!-- MODAL: Adicionar/Editar Hábito -->
     <div class="modal-overlay" id="add-habit-modal">
         <div class="modal-content">
-            <h3>✨ Novo Hábito</h3>
+            <h3 id="modal-habit-title">✨ Novo Hábito</h3>
             <div class="input-group">
                 <label>Emoji (Ícone)</label>
                 <input type="text" id="habit-emoji-input" placeholder="Ex: 🏃‍♂️" maxlength="2" value="⭐">

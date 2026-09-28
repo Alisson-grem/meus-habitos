@@ -117,11 +117,23 @@ body {
     border: 1px solid var(--border-color); border-radius: 12px;
     color: var(--text-main); font-weight: 500; font-size: 15px;
 }
+
+/* Lista de Hábitos p/ Gerenciar (Editar e Excluir) */
 .settings-habits-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
-.delete-habit-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: var(--btn-bg); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); }
-.delete-habit-item span { font-weight: 500; display: flex; align-items: center; gap: 8px;}
-.delete-btn { background: transparent; border: none; color: #ef4444; font-size: 20px; cursor: pointer; transition: transform 0.2s; padding: 5px; }
-.delete-btn:hover { transform: scale(1.2); }
+.manage-habit-item { 
+    display: flex; align-items: center; justify-content: space-between; 
+    padding: 10px 15px; background: var(--btn-bg); 
+    border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-main); 
+}
+.manage-habit-item span { font-weight: 500; display: flex; align-items: center; gap: 8px;}
+.manage-actions { display: flex; gap: 5px; }
+.manage-btn { 
+    background: transparent; border: none; font-size: 18px; 
+    cursor: pointer; transition: transform 0.2s; padding: 5px; 
+}
+.manage-btn.edit { color: #3b82f6; }
+.manage-btn.delete { color: #ef4444; }
+.manage-btn:hover { transform: scale(1.2); }
 
 /* FOGUINHO DAS ESTATÍSTICAS 🔥 */
 .streak-circle {
