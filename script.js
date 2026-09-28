@@ -4,15 +4,8 @@ const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
 const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
-// Som com arquivo real que o HTML pega
-const somMoeda = document.getElementById('coin-sound');
-
-// Variáveis da Ofensiva
-let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
-let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
-let ultimoDiaCompleto = localStorage.getItem('ultimoDiaCompleto'); 
-
-// Variáveis de Som da Sipah
+// === MAGIA DO SOM DA SIPAH (100% OFFLINE) ===
+let audioCtx;
 let somLigado = localStorage.getItem('somLigado') !== 'false';
 const toggleSoundBtn = document.getElementById('toggle-sound-btn');
 
@@ -27,18 +20,54 @@ toggleSoundBtn.addEventListener('click', () => {
     somLigado = !somLigado;
     localStorage.setItem('somLigado', somLigado);
     atualizarBotaoSom();
+    iniciarAudio(); // Tenta acordar o som
 });
 
-// Som mais robusto, navegador chato não pode bloquear
-function tocarSomMoeda() {
-    if (!somLigado) return;
-    try {
-        somMoeda.currentTime = 0; // Volta pro começo se clicar rápido
-        somMoeda.play().catch(e => console.log('Bloqueado pelo navegador:', e));
-    } catch (e) {
-        console.log('Erro de som:', e);
+// Desbloqueia o som no primeiro clique (Regra dos navegadores chatos!)
+function iniciarAudio() {
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
     }
 }
+document.body.addEventListener('click', iniciarAudio, { once: true });
+document.body.addEventListener('touchstart', iniciarAudio, { once: true });
+
+function tocarSomMoeda() {
+    if (!somLigado) return;
+    iniciarAudio(); // Garante que tá acordado
+    
+    if (!audioCtx) return;
+
+    try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime); // Dó Agudo
+        osc.frequency.exponentialRampToValueAtTime(2093.00, audioCtx.currentTime + 0.1); 
+        
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.3);
+    } catch (e) {
+        console.log('Sipah tentou tocar, mas deu erro:', e);
+    }
+}
+
+// === RESTO DO CÓDIGO ===
+let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
+let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
+let ultimoDiaCompleto = localStorage.getItem('ultimoDiaCompleto'); 
 
 let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
     { id: 'agua', icon: '💧', text: 'Beber Água' },
@@ -75,7 +104,6 @@ function renderizarHabitos() {
         btn.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(50);
             
-            // Toca som APENAS quando for completar (não quando tirar)
             if (!btn.classList.contains('completed')) {
                 tocarSomMoeda();
             }
