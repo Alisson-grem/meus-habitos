@@ -4,8 +4,10 @@ const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
 const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
-// === MAGIA DO SOM DA SIPAH (100% OFFLINE) ===
-let audioCtx;
+// === MAGIA DO SOM LOCAL (Brave não pode bloquear!) ===
+// Humaninho, você precisa colocar o arquivo moeda.mp3 na mesma pasta!
+const somMoeda = new Audio('./moeda.mp3');
+
 let somLigado = localStorage.getItem('somLigado') !== 'false';
 const toggleSoundBtn = document.getElementById('toggle-sound-btn');
 
@@ -20,47 +22,18 @@ toggleSoundBtn.addEventListener('click', () => {
     somLigado = !somLigado;
     localStorage.setItem('somLigado', somLigado);
     atualizarBotaoSom();
-    iniciarAudio(); // Tenta acordar o som
 });
-
-// Desbloqueia o som no primeiro clique (Regra dos navegadores chatos!)
-function iniciarAudio() {
-    if (!audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) audioCtx = new AudioContext();
-    }
-    if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-}
-document.body.addEventListener('click', iniciarAudio, { once: true });
-document.body.addEventListener('touchstart', iniciarAudio, { once: true });
 
 function tocarSomMoeda() {
     if (!somLigado) return;
-    iniciarAudio(); // Garante que tá acordado
-    
-    if (!audioCtx) return;
-
     try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime); // Dó Agudo
-        osc.frequency.exponentialRampToValueAtTime(2093.00, audioCtx.currentTime + 0.1); 
-        
-        gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.start(audioCtx.currentTime);
-        osc.stop(audioCtx.currentTime + 0.3);
+        somMoeda.volume = 1.0;
+        somMoeda.currentTime = 0; 
+        somMoeda.play().catch(e => {
+            console.log('O Leão do Brave bloqueou ou você esqueceu de baixar o mp3!', e);
+        });
     } catch (e) {
-        console.log('Sipah tentou tocar, mas deu erro:', e);
+        console.log('Erro de som:', e);
     }
 }
 
@@ -104,6 +77,7 @@ function renderizarHabitos() {
         btn.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(50);
             
+            // Toca som APENAS quando for completar
             if (!btn.classList.contains('completed')) {
                 tocarSomMoeda();
             }
