@@ -29,7 +29,7 @@ let somLigado = lsGet('somLigado', true) === true || lsGet('somLigado', true) ==
 let habitoEmEdicaoId = null;
 
 // --- Som e Confetes ---
-const somMoeda = new Audio('./moeda.mp3');
+const somMoeda = new Audio('./Sons/moeda.mp3');
 const btnSom = $('toggle-sound-btn');
 
 const atualizarBotaoSom = () => {
