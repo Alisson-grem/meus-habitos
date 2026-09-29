@@ -1,6 +1,17 @@
 // --- Elementos Base e Utilitários ---
 const $ = id => document.getElementById(id);
-const lsGet = (k, def) => JSON.parse(localStorage.getItem(k)) ?? def;
+
+// O conserto da Sipah: Tenta ler como JSON, se der erro (dados antigos), devolve o texto normal!
+const lsGet = (k, def) => {
+    const val = localStorage.getItem(k);
+    if (val === null) return def;
+    try { 
+        return JSON.parse(val); 
+    } catch (e) { 
+        return val; 
+    }
+};
+
 const lsSet = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
 // --- Variáveis de Estado ---
@@ -13,12 +24,12 @@ let habitos = lsGet('meusHabitos', {});
 let streak = parseInt(lsGet('streakAtual', 0));
 let melhorStreak = parseInt(lsGet('streakMelhor', 0));
 let ultimoDiaCompleto = lsGet('ultimoDiaCompleto', null);
-let notificouHoje = lsGet('notificouHoje', false);
-let somLigado = lsGet('somLigado', true);
+let notificouHoje = lsGet('notificouHoje', false) === true || lsGet('notificouHoje', false) === 'true';
+let somLigado = lsGet('somLigado', true) === true || lsGet('somLigado', true) === 'true';
 let habitoEmEdicaoId = null;
 
 // --- Som e Confetes ---
-const somMoeda = new Audio('./Sons/moeda.mp3');
+const somMoeda = new Audio('./moeda.mp3');
 const btnSom = $('toggle-sound-btn');
 
 const atualizarBotaoSom = () => {
@@ -67,7 +78,10 @@ const verificarOfensiva = () => {
 
 const atualizarProgresso = () => {
     const total = listaHabitos.length;
-    if(!total) return $('progressBar').style.width = '0%';
+    if(!total) {
+        $('progressBar').style.width = '0%';
+        return;
+    }
     
     const concluidos = Object.values(habitos).filter(Boolean).length;
     const porcentagem = (concluidos / total) * 100;
@@ -145,14 +159,14 @@ if (ultimoReset && (Date.now() - parseInt(ultimoReset)) >= 86400000) {
     zerarHabitos(); lsSet('ultimoReset', Date.now());
 }
 
-// --- Lógica de UI e Modais (DRY) ---
+// --- Lógica de UI e Modais ---
 const toggleModal = (id, show) => $(id).classList[show ? 'add' : 'remove']('show');
 
 ['settings', 'stats'].forEach(m => {
     const open = () => { if(m==='stats') verificarOfensiva(); toggleModal(`${m}-modal`, true); };
     if($(`${m}-btn-pc`)) $(`${m}-btn-pc`).onclick = open;
     if($(`${m}-btn-mobile`)) $(`${m}-btn-mobile`).onclick = open;
-    $(`close-${m}-btn`).onclick = () => toggleModal(`${m}-modal`, false);
+    if($(`close-${m}-btn`)) $(`close-${m}-btn`).onclick = () => toggleModal(`${m}-modal`, false);
 });
 
 const prepararModalHabito = (h = null) => {
@@ -184,7 +198,7 @@ $('save-habit-btn').onclick = () => {
 };
 
 // Temas
-let isDark = lsGet('darkMode', false);
+let isDark = lsGet('darkMode', false) === true || lsGet('darkMode', false) === 'true';
 let corTema = lsGet('corTema', 'emerald');
 
 const aplicarTema = () => {
