@@ -11,10 +11,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body data-color="emerald">
-    <!-- Som escondido -->
     <audio id="coin-sound" src="./moeda.mp3" preload="auto"></audio>
 
-    <!-- Header exclusivo de PC -->
+    <!-- Header PC -->
     <header class="desktop-header glass">
         <div class="logo">✨ Meus Mini-Hábitos</div>
         <div class="header-icons">
@@ -24,19 +23,18 @@
         </div>
     </header>
 
-    <!-- Header exclusivo de Celular -->
+    <!-- Header Celular -->
     <header class="mobile-header glass">
         <h2 class="mobile-title">Mini-Hábitos</h2>
         <button class="icon-btn settings-mobile" id="settings-btn-mobile">⚙️</button>
     </header>
 
-    <div class="app-container glass-container">
+    <div class="app-container">
         <header class="app-header">
             <h1>Seu Progresso</h1>
             <p class="subtitle">Complete suas metas diárias</p>
         </header>
         
-        <!-- Barra de progresso -->
         <div class="progress-wrapper">
             <div class="progress-track">
                 <div class="progress-fill" id="progressBar"></div>
@@ -44,9 +42,7 @@
         </div>
 
         <!-- Grade de hábitos -->
-        <div class="habits-list" id="habits-list">
-            <!-- Os botões entram aqui via JavaScript -->
-        </div>
+        <div class="habits-list" id="habits-list"></div>
 
         <div class="actions-container">
             <button id="add-btn-pc" class="btn-primary desktop-only glow-btn">➕ Adicionar Hábito</button>
@@ -55,16 +51,12 @@
         </div>
     </div>
 
-    <!-- Footer exclusivo de celular -->
+    <!-- Footer Celular (Sem o botão Home!) -->
     <footer class="mobile-footer glass" id="mobile-footer">
-        <button class="nav-btn active" id="home-btn-mobile">
-            <span class="icon">🏠</span>
-        </button>
         <button class="nav-btn" id="stats-btn-mobile">
             <span class="icon">📈</span>
         </button>
         
-        <!-- BOTÃO GORDINHO DO MEIO -->
         <div class="fab-wrapper">
             <button class="big-add-btn glow-btn" id="add-btn-mobile">➕</button>
         </div>
@@ -83,18 +75,15 @@
         <div class="modal-content glass-modal">
             <h3>🔥 Sua Ofensiva</h3>
             <p class="modal-subtitle">Não quebre a corrente!</p>
-            
             <div class="streak-circle">
                 <span class="streak-fire-icon">🔥</span>
                 <h2 id="current-streak-display">0</h2>
                 <p>dias</p>
             </div>
-            
             <div class="stats-footer">
                 <span>👑 Recorde:</span>
                 <span id="best-streak-display">0 dias</span>
             </div>
-            
             <button class="btn-primary glow-btn" id="close-stats-btn" style="margin-top: 25px;">Fechar</button>
         </div>
     </div>
@@ -117,9 +106,7 @@
             </div>
 
             <h3 class="modal-section-title">✏️ Gerenciar Hábitos</h3>
-            <div id="settings-habits-list" class="settings-habits-list">
-                <!-- A lista de hábitos para editar e apagar entra aqui -->
-            </div>
+            <div id="settings-habits-list" class="settings-habits-list"></div>
             
             <button class="btn-primary glow-btn" id="close-settings-btn" style="margin-top: 20px;">Fechar</button>
         </div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habitos-v15';
+const CACHE_NAME = 'habitos-v17';
 const arquivosParaSalvar = [
     './',
     './index.html',
@@ -8,33 +8,15 @@ const arquivosParaSalvar = [
 ];
 
 self.addEventListener('install', evento => {
-    evento.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(arquivosParaSalvar);
-        })
-    );
+    evento.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(arquivosParaSalvar)));
     self.skipWaiting();
 });
 
 self.addEventListener('activate', evento => {
-    evento.waitUntil(
-        caches.keys().then(chaves => {
-            return Promise.all(
-                chaves.map(chave => {
-                    if (chave !== CACHE_NAME) {
-                        return caches.delete(chave);
-                    }
-                })
-            );
-        })
-    );
+    evento.waitUntil(caches.keys().then(chaves => Promise.all(chaves.map(chave => { if (chave !== CACHE_NAME) return caches.delete(chave); }))));
     self.clients.claim();
 });
 
 self.addEventListener('fetch', evento => {
-    evento.respondWith(
-        caches.match(evento.request).then(resposta => {
-            return resposta || fetch(evento.request);
-        })
-    );
+    evento.respondWith(caches.match(evento.request).then(resposta => resposta || fetch(evento.request)));
 });

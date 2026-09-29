@@ -1,347 +1,227 @@
-const listaHabitosDiv = document.getElementById('habits-list');
-const barraProgresso = document.getElementById('progressBar');
-const botaoReset = document.getElementById('reset-btn');
-const botaoNotificacao = document.getElementById('notify-btn');
-const settingsHabitsListDiv = document.getElementById('settings-habits-list');
+// --- Elementos Base e Utilitários ---
+const $ = id => document.getElementById(id);
+const lsGet = (k, def) => JSON.parse(localStorage.getItem(k)) ?? def;
+const lsSet = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-const somMoeda = new Audio('./moeda.mp3');
-
-let somLigado = localStorage.getItem('somLigado') !== 'false';
-const toggleSoundBtn = document.getElementById('toggle-sound-btn');
-
-function atualizarBotaoSom() {
-    toggleSoundBtn.innerText = somLigado ? 'Ligado' : 'Desligado';
-    toggleSoundBtn.style.borderColor = somLigado ? 'var(--primary)' : 'var(--text-muted)';
-    toggleSoundBtn.style.color = somLigado ? 'var(--primary)' : 'var(--text-muted)';
-}
-atualizarBotaoSom();
-
-toggleSoundBtn.addEventListener('click', () => {
-    somLigado = !somLigado;
-    localStorage.setItem('somLigado', somLigado);
-    atualizarBotaoSom();
-});
-
-function tocarSomMoeda() {
-    if (!somLigado) return;
-    try {
-        somMoeda.volume = 1.0;
-        somMoeda.currentTime = 0; 
-        somMoeda.play().catch(e => console.log('Som bloqueado', e));
-    } catch (e) {
-        console.log('Erro de som:', e);
-    }
-}
-
-// Magia dos Confetes
-function soltarConfetesMagicos() {
-    const emojis = ['✨', '🎉', '🔥', '🏆', '💎', '🌟'];
-    for(let i = 0; i < 40; i++) {
-        const confete = document.createElement('div');
-        confete.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-        confete.style.position = 'fixed';
-        confete.style.left = Math.random() * 100 + 'vw';
-        confete.style.top = '-5vh';
-        confete.style.fontSize = (Math.random() * 20 + 15) + 'px';
-        confete.style.zIndex = '9999';
-        confete.style.pointerEvents = 'none';
-        confete.style.transition = 'transform 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 2.5s';
-        
-        document.body.appendChild(confete);
-        
-        setTimeout(() => {
-            confete.style.top = '105vh';
-            confete.style.transform = `rotate(${Math.random() * 720}deg) translateX(${Math.random() * 200 - 100}px)`;
-            confete.style.opacity = '0';
-        }, 50);
-        
-        setTimeout(() => confete.remove(), 2600);
-    }
-}
-
-let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
-let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
-let ultimoDiaCompleto = localStorage.getItem('ultimoDiaCompleto'); 
-
-let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
+// --- Variáveis de Estado ---
+let listaHabitos = lsGet('listaHabitosConfig', [
     { id: 'agua', icon: '💧', text: 'Beber Água' },
     { id: 'leitura', icon: '📚', text: 'Ler 10 pág.' },
     { id: 'alongar', icon: '🧘‍♂️', text: 'Alongar' }
-];
-
-let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
-let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
+]);
+let habitos = lsGet('meusHabitos', {});
+let streak = parseInt(lsGet('streakAtual', 0));
+let melhorStreak = parseInt(lsGet('streakMelhor', 0));
+let ultimoDiaCompleto = lsGet('ultimoDiaCompleto', null);
+let notificouHoje = lsGet('notificouHoje', false);
+let somLigado = lsGet('somLigado', true);
 let habitoEmEdicaoId = null;
 
-function verificarOfensiva() {
+// --- Som e Confetes ---
+const somMoeda = new Audio('./Sons/moeda.mp3');
+const btnSom = $('toggle-sound-btn');
+
+const atualizarBotaoSom = () => {
+    btnSom.innerText = somLigado ? 'Ligado' : 'Desligado';
+    btnSom.style.color = btnSom.style.borderColor = somLigado ? 'var(--primary)' : 'var(--text-muted)';
+};
+atualizarBotaoSom();
+
+btnSom.onclick = () => {
+    somLigado = !somLigado;
+    lsSet('somLigado', somLigado);
+    atualizarBotaoSom();
+};
+
+const tocarSomMoeda = () => {
+    if (!somLigado) return;
+    try { somMoeda.volume = 1.0; somMoeda.currentTime = 0; somMoeda.play().catch(e=>e); } catch(e){}
+};
+
+const soltarConfetesMagicos = () => {
+    const emojis = ['✨', '🎉', '🔥', '🏆', '💎', '🌟'];
+    for(let i = 0; i < 40; i++) {
+        const c = document.createElement('div');
+        c.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        c.style.cssText = `position:fixed; left:${Math.random()*100}vw; top:-5vh; font-size:${Math.random()*20+15}px; z-index:9999; pointer-events:none; transition: all 2.5s cubic-bezier(0.25,0.46,0.45,0.94); opacity:1;`;
+        document.body.appendChild(c);
+        setTimeout(() => {
+            c.style.top = '105vh';
+            c.style.transform = `rotate(${Math.random()*720}deg) translateX(${Math.random()*200-100}px)`;
+            c.style.opacity = '0';
+        }, 50);
+        setTimeout(() => c.remove(), 2600);
+    }
+};
+
+// --- Lógica Principal (Hábitos e Progresso) ---
+const verificarOfensiva = () => {
     const hoje = new Date().toDateString();
     const ontem = new Date(Date.now() - 86400000).toDateString();
-    if (ultimoDiaCompleto !== hoje && ultimoDiaCompleto !== ontem && ultimoDiaCompleto !== null) {
-        streak = 0;
-        localStorage.setItem('streakAtual', streak);
+    if (ultimoDiaCompleto && ultimoDiaCompleto !== hoje && ultimoDiaCompleto !== ontem) {
+        streak = 0; lsSet('streakAtual', streak);
     }
-    document.getElementById('current-streak-display').innerText = streak;
-    document.getElementById('best-streak-display').innerText = melhorStreak + ' dias';
-}
-verificarOfensiva();
+    $('current-streak-display').innerText = streak;
+    $('best-streak-display').innerText = melhorStreak + ' dias';
+};
 
-function renderizarHabitos() {
-    listaHabitosDiv.innerHTML = ''; 
-    listaHabitos.forEach(habito => {
-        const btn = document.createElement('button');
-        btn.className = 'habit-btn';
-        btn.setAttribute('data-habit', habito.id);
-        
-        if (habitos[habito.id]) btn.classList.add('completed');
-        
-        btn.innerHTML = `<span class="icon">${habito.icon}</span><span class="text">${habito.text}</span>`;
-        
-        btn.addEventListener('click', () => {
-            if (navigator.vibrate) navigator.vibrate(50);
-            
-            if (!btn.classList.contains('completed')) {
-                tocarSomMoeda();
-            }
-            
-            btn.classList.toggle('completed');
-            habitos[habito.id] = btn.classList.contains('completed');
-            localStorage.setItem('meusHabitos', JSON.stringify(habitos));
-            atualizarProgresso();
-        });
-        
-        listaHabitosDiv.appendChild(btn);
-    });
-    atualizarProgresso();
-    renderizarListaGerenciar(); 
-}
-
-function renderizarListaGerenciar() {
-    settingsHabitsListDiv.innerHTML = '';
-    if (listaHabitos.length === 0) {
-        settingsHabitsListDiv.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">Nenhum hábito na lista.</p>';
-        return;
-    }
-    listaHabitos.forEach(habito => {
-        const div = document.createElement('div');
-        div.className = 'manage-habit-item glass-item';
-        div.innerHTML = `
-            <span>${habito.icon} ${habito.text}</span>
-            <div class="manage-actions">
-                <button class="manage-btn edit" title="Editar hábito">✏️</button>
-                <button class="manage-btn delete" title="Apagar hábito">🗑️</button>
-            </div>
-        `;
-        
-        div.querySelector('.edit').addEventListener('click', () => {
-            prepararEdicaoHabito(habito);
-        });
-
-        div.querySelector('.delete').addEventListener('click', () => {
-            if(confirm(`Jogar '${habito.text}' no lixo, humano?`)) {
-                excluirHabito(habito.id);
-            }
-        });
-        settingsHabitsListDiv.appendChild(div);
-    });
-}
-
-function excluirHabito(idParaApagar) {
-    listaHabitos = listaHabitos.filter(habito => habito.id !== idParaApagar);
-    localStorage.setItem('listaHabitosConfig', JSON.stringify(listaHabitos));
-    if (habitos[idParaApagar] !== undefined) {
-        delete habitos[idParaApagar];
-        localStorage.setItem('meusHabitos', JSON.stringify(habitos));
-    }
-    renderizarHabitos();
-}
-
-function atualizarProgresso() {
+const atualizarProgresso = () => {
     const total = listaHabitos.length;
-    if(total === 0) { barraProgresso.style.width = `0%`; return; }
-    const concluidos = Object.values(habitos).filter(status => status === true).length;
+    if(!total) return $('progressBar').style.width = '0%';
+    
+    const concluidos = Object.values(habitos).filter(Boolean).length;
     const porcentagem = (concluidos / total) * 100;
-    barraProgresso.style.width = `${porcentagem}%`;
+    $('progressBar').style.width = `${porcentagem}%`;
     
     if (porcentagem === 100) {
         const hoje = new Date().toDateString();
         const ontem = new Date(Date.now() - 86400000).toDateString();
-        
         if (ultimoDiaCompleto !== hoje) {
-            soltarConfetesMagicos(); // Uhuu!
-            if (ultimoDiaCompleto === ontem || ultimoDiaCompleto === null || streak === 0) {
-                streak++;
-            } else {
-                streak = 1; 
-            }
-            if (streak > melhorStreak) melhorStreak = streak;
-            
+            soltarConfetesMagicos();
+            streak = (ultimoDiaCompleto === ontem || !ultimoDiaCompleto || !streak) ? streak + 1 : 1;
+            melhorStreak = Math.max(streak, melhorStreak);
             ultimoDiaCompleto = hoje;
-            localStorage.setItem('streakAtual', streak);
-            localStorage.setItem('streakMelhor', melhorStreak);
-            localStorage.setItem('ultimoDiaCompleto', ultimoDiaCompleto);
+            lsSet('streakAtual', streak); lsSet('streakMelhor', melhorStreak); lsSet('ultimoDiaCompleto', ultimoDiaCompleto);
             verificarOfensiva(); 
         }
-        enviarNotificacaoParabens();
-    }
-}
-
-function enviarNotificacaoParabens() {
-    if ("Notification" in window && Notification.permission === "granted" && !notificouHoje) {
-        new Notification("✨ Uhuu!", { body: "Você completou todos os mini-hábitos!", icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png" });
-        notificouHoje = true;
-        localStorage.setItem('notificouHoje', 'true');
-    }
-}
-
-if (!("Notification" in window) || Notification.permission === 'granted' || Notification.permission === 'denied') {
-    botaoNotificacao.style.display = 'none';
-}
-botaoNotificacao.addEventListener('click', () => {
-    Notification.requestPermission().then(permissao => {
-        if (permissao === 'granted') {
-            botaoNotificacao.style.display = 'none';
-            new Notification("Hmph!", { body: "Sipah tá de olho!" });
+        if ("Notification" in window && Notification.permission === "granted" && !notificouHoje) {
+            new Notification("✨ Uhuu!", { body: "Você completou todos os mini-hábitos!", icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png" });
+            notificouHoje = true; lsSet('notificouHoje', true);
         }
-    });
-});
+    }
+};
 
-// === MODAIS ===
-const modalSettings = document.getElementById('settings-modal');
-const modalAddHabit = document.getElementById('add-habit-modal');
-const modalStats = document.getElementById('stats-modal');
-
-document.getElementById('settings-btn-pc').addEventListener('click', () => modalSettings.classList.add('show'));
-document.getElementById('settings-btn-mobile').addEventListener('click', () => modalSettings.classList.add('show'));
-document.getElementById('close-settings-btn').addEventListener('click', () => modalSettings.classList.remove('show'));
-
-function prepararCriacaoHabito() {
-    habitoEmEdicaoId = null;
-    document.getElementById('modal-habit-title').innerText = "✨ Novo Hábito";
-    document.getElementById('habit-emoji-input').value = "⭐";
-    document.getElementById('habit-name-input').value = "";
-    modalAddHabit.classList.add('show');
-}
-
-function prepararEdicaoHabito(habito) {
-    habitoEmEdicaoId = habito.id;
-    document.getElementById('modal-habit-title').innerText = "✏️ Editar Hábito";
-    document.getElementById('habit-emoji-input').value = habito.icon;
-    document.getElementById('habit-name-input').value = habito.text;
-    modalSettings.classList.remove('show'); // Esconde settings pra focar na edição
-    modalAddHabit.classList.add('show');
-}
-
-document.getElementById('add-btn-mobile').addEventListener('click', prepararCriacaoHabito);
-document.getElementById('add-btn-pc').addEventListener('click', prepararCriacaoHabito);
-document.getElementById('cancel-habit-btn').addEventListener('click', () => modalAddHabit.classList.remove('show'));
-
-document.getElementById('stats-btn-pc').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
-document.getElementById('stats-btn-mobile').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
-document.getElementById('close-stats-btn').addEventListener('click', () => modalStats.classList.remove('show'));
-
-document.getElementById('save-habit-btn').addEventListener('click', () => {
-    const icon = document.getElementById('habit-emoji-input').value || '⭐';
-    const text = document.getElementById('habit-name-input').value;
-    if (text.trim() === '') { alert("Escreve o nome do hábito!"); return; }
+const renderizarHabitos = () => {
+    $('habits-list').innerHTML = '';$('settings-habits-list').innerHTML = listaHabitos.length ? '' : '<p style="color:var(--text-muted); font-size:14px;">Nenhum hábito.</p>';
     
-    if (habitoEmEdicaoId !== null) {
-        const index = listaHabitos.findIndex(h => h.id === habitoEmEdicaoId);
-        if (index !== -1) {
-            listaHabitos[index].icon = icon;
-            listaHabitos[index].text = text;
-        }
-        habitoEmEdicaoId = null; 
-    } else {
-        const id = 'hab_' + Date.now(); 
-        listaHabitos.push({ id, icon, text });
-    }
+    listaHabitos.forEach(h => {
+        // Na tela principal
+        const btn = document.createElement('button');
+        btn.className = `habit-btn ${habitos[h.id] ? 'completed' : ''}`;
+        btn.innerHTML = `<span class="icon">${h.icon}</span><span class="text">${h.text}</span>`;
+        btn.onclick = () => {
+            if (navigator.vibrate) navigator.vibrate(50);
+            if (!btn.classList.contains('completed')) tocarSomMoeda();
+            btn.classList.toggle('completed');
+            habitos[h.id] = btn.classList.contains('completed');
+            lsSet('meusHabitos', habitos);
+            atualizarProgresso();
+        };
+        $('habits-list').appendChild(btn);
 
-    localStorage.setItem('listaHabitosConfig', JSON.stringify(listaHabitos));
-    modalAddHabit.classList.remove('show');
-    renderizarHabitos();
-});
-
-let isDark = localStorage.getItem('darkMode') === 'true';
-let corTema = localStorage.getItem('corTema') || 'emerald';
-
-function aplicarTema() {
-    if (isDark) {
-        document.body.classList.add('dark-mode');
-        document.getElementById('theme-btn-pc').innerText = '☀️';
-        document.getElementById('theme-btn-mobile').querySelector('.icon').innerText = '☀️';
-        document.getElementById('meta-theme-color').setAttribute('content', '#1e1e1e');
-    } else {
-        document.body.classList.remove('dark-mode');
-        document.getElementById('theme-btn-pc').innerText = '🌙';
-        document.getElementById('theme-btn-mobile').querySelector('.icon').innerText = '🌙';
-        document.getElementById('meta-theme-color').setAttribute('content', '#f8f9fa');
-    }
-    document.body.setAttribute('data-color', corTema);
-}
-aplicarTema();
-
-function alternarDark() {
-    isDark = !isDark;
-    localStorage.setItem('darkMode', isDark);
-    aplicarTema();
-}
-document.getElementById('theme-btn-pc').addEventListener('click', alternarDark);
-document.getElementById('theme-btn-mobile').addEventListener('click', alternarDark);
-
-document.querySelectorAll('.theme-color-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        corTema = e.target.getAttribute('data-setcolor');
-        localStorage.setItem('corTema', corTema);
-        aplicarTema();
+        // Na lista de gerenciar
+        const div = document.createElement('div');
+        div.className = 'manage-habit-item glass-item';
+        div.innerHTML = `<span>${h.icon} ${h.text}</span><div class="manage-actions"><button class="manage-btn edit">✏️</button><button class="manage-btn delete">🗑️</button></div>`;
+        div.querySelector('.edit').onclick = () => prepararModalHabito(h);
+        div.querySelector('.delete').onclick = () => {
+            if(confirm(`Apagar '${h.text}', humano?`)) {
+                listaHabitos = listaHabitos.filter(item => item.id !== h.id);
+                delete habitos[h.id];
+                lsSet('listaHabitosConfig', listaHabitos); lsSet('meusHabitos', habitos);
+                renderizarHabitos();
+            }
+        };
+        $('settings-habits-list').appendChild(div);
     });
-});
+    atualizarProgresso();
+};
 
-function zerarHabitos() {
-    habitos = {};
-    localStorage.removeItem('meusHabitos');
-    notificouHoje = false;
-    localStorage.removeItem('notificouHoje');
+const zerarHabitos = () => {
+    habitos = {}; notificouHoje = false;
+    localStorage.removeItem('meusHabitos'); localStorage.removeItem('notificouHoje');
     renderizarHabitos();
-}
+};
 
-botaoReset.addEventListener('click', () => {
+$('reset-btn').onclick = () => {
     if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
     zerarHabitos();
-    localStorage.setItem('ultimoReset', Date.now());
+    lsSet('ultimoReset', Date.now());
+};
+
+// Reset Automático 24h
+const ultimoReset = lsGet('ultimoReset', null);
+if (ultimoReset && (Date.now() - parseInt(ultimoReset)) >= 86400000) {
+    zerarHabitos(); lsSet('ultimoReset', Date.now());
+}
+
+// --- Lógica de UI e Modais (DRY) ---
+const toggleModal = (id, show) => $(id).classList[show ? 'add' : 'remove']('show');
+
+['settings', 'stats'].forEach(m => {
+    const open = () => { if(m==='stats') verificarOfensiva(); toggleModal(`${m}-modal`, true); };
+    if($(`${m}-btn-pc`)) $(`${m}-btn-pc`).onclick = open;
+    if($(`${m}-btn-mobile`)) $(`${m}-btn-mobile`).onclick = open;
+    $(`close-${m}-btn`).onclick = () => toggleModal(`${m}-modal`, false);
 });
 
-function checarResetAutomatico() {
-    const ultimoReset = localStorage.getItem('ultimoReset');
-    if (ultimoReset) {
-        const agora = Date.now();
-        if ((agora - parseInt(ultimoReset)) >= (24 * 60 * 60 * 1000)) {
-            zerarHabitos();
-            localStorage.setItem('ultimoReset', agora);
-        }
+const prepararModalHabito = (h = null) => {
+    habitoEmEdicaoId = h ? h.id : null;
+    $('modal-habit-title').innerText = h ? "✏️ Editar Hábito" : "✨ Novo Hábito";
+    $('habit-emoji-input').value = h ? h.icon : "⭐";
+    $('habit-name-input').value = h ? h.text : "";
+    if(h) toggleModal('settings-modal', false);
+    toggleModal('add-habit-modal', true);
+};
+
+$('add-btn-mobile').onclick = () => prepararModalHabito();
+$('add-btn-pc').onclick = () => prepararModalHabito();$('cancel-habit-btn').onclick = () => toggleModal('add-habit-modal', false);
+
+$('save-habit-btn').onclick = () => {
+    const icon = $('habit-emoji-input').value || '⭐';
+    const text = $('habit-name-input').value.trim();
+    if (!text) return alert("Escreve o nome do hábito!");
+    
+    if (habitoEmEdicaoId) {
+        const h = listaHabitos.find(x => x.id === habitoEmEdicaoId);
+        if(h) { h.icon = icon; h.text = text; }
+    } else {
+        listaHabitos.push({ id: 'hab_' + Date.now(), icon, text });
     }
-}
-checarResetAutomatico();
+    lsSet('listaHabitosConfig', listaHabitos);
+    toggleModal('add-habit-modal', false);
+    renderizarHabitos();
+};
+
+// Temas
+let isDark = lsGet('darkMode', false);
+let corTema = lsGet('corTema', 'emerald');
+
+const aplicarTema = () => {
+    document.body.classList[isDark ? 'add' : 'remove']('dark-mode');
+    $('theme-btn-pc').innerText =$('theme-btn-mobile').querySelector('.icon').innerText = isDark ? '☀️' : '🌙';
+    $('meta-theme-color').setAttribute('content', isDark ? '#1e1e1e' : '#f8f9fa');
+    document.body.setAttribute('data-color', corTema);
+};
+aplicarTema();
+
+const switchDark = () => { isDark = !isDark; lsSet('darkMode', isDark); aplicarTema(); };
+$('theme-btn-pc').onclick = switchDark;
+$('theme-btn-mobile').onclick = switchDark;
+
+document.querySelectorAll('.theme-color-btn').forEach(btn => {
+    btn.onclick = (e) => { corTema = e.target.dataset.setcolor; lsSet('corTema', corTema); aplicarTema(); };
+});
+
+// Notificações e PWA
+if (!("Notification" in window) || Notification.permission !== 'default') $('notify-btn').style.display = 'none';$('notify-btn').onclick = () => {
+    Notification.requestPermission().then(p => { if (p === 'granted') { $('notify-btn').style.display = 'none'; new Notification("Hmph!", { body: "Sipah atenta!" }); } });
+};
 
 let eventoInstalacao;
-const botaoInstalarIcone = document.getElementById('install-icon-btn');
-window.addEventListener('beforeinstallprompt', (evento) => {
-    evento.preventDefault();
-    eventoInstalacao = evento;
-    botaoInstalarIcone.style.display = 'inline-block';
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); eventoInstalacao = e; $('install-icon-btn').style.display = 'inline-block';
 });
-botaoInstalarIcone.addEventListener('click', async () => {
+$('install-icon-btn').onclick = async () => {
     if (!eventoInstalacao) return;
     eventoInstalacao.prompt();
-    const resultado = await eventoInstalacao.userChoice;
-    if (resultado.outcome === 'accepted') botaoInstalarIcone.style.display = 'none';
+    if ((await eventoInstalacao.userChoice).outcome === 'accepted') $('install-icon-btn').style.display = 'none';
     eventoInstalacao = null;
-});
-window.addEventListener('appinstalled', () => { botaoInstalarIcone.style.display = 'none'; });
+};
+window.addEventListener('appinstalled', () => $('install-icon-btn').style.display = 'none');
 
+// Inicialização
+verificarOfensiva();
 renderizarHabitos();
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(erro => console.log('Falha', erro));
-    });
-}
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(e=>e));
