@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#f8f9fa">
+    <meta name="theme-color" content="#f8f9fa" id="meta-theme-color">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Dashboard de Hábitos</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 <body data-color="emerald">
+    <!-- Som escondido -->
+    <audio id="coin-sound" src="./moeda.mp3" preload="auto"></audio>
+
     <!-- Header exclusivo de PC -->
-    <header class="desktop-header">
+    <header class="desktop-header glass">
         <div class="logo">✨ Meus Mini-Hábitos</div>
         <div class="header-icons">
             <button class="icon-btn" id="stats-btn-pc" title="Estatísticas">📈</button>
@@ -22,12 +25,12 @@
     </header>
 
     <!-- Header exclusivo de Celular -->
-    <header class="mobile-header">
+    <header class="mobile-header glass">
         <h2 class="mobile-title">Mini-Hábitos</h2>
         <button class="icon-btn settings-mobile" id="settings-btn-mobile">⚙️</button>
     </header>
 
-    <div class="app-container">
+    <div class="app-container glass-container">
         <header class="app-header">
             <h1>Seu Progresso</h1>
             <p class="subtitle">Complete suas metas diárias</p>
@@ -46,14 +49,14 @@
         </div>
 
         <div class="actions-container">
-            <button id="add-btn-pc" class="btn-primary desktop-only">➕ Adicionar Hábito</button>
+            <button id="add-btn-pc" class="btn-primary desktop-only glow-btn">➕ Adicionar Hábito</button>
             <button id="notify-btn" class="btn-outline">🔔 Ativar Notificações</button>
             <button id="reset-btn" class="btn-secondary">🔄 Zerar o Dia</button>
         </div>
     </div>
 
     <!-- Footer exclusivo de celular -->
-    <footer class="mobile-footer" id="mobile-footer">
+    <footer class="mobile-footer glass" id="mobile-footer">
         <button class="nav-btn active" id="home-btn-mobile">
             <span class="icon">🏠</span>
         </button>
@@ -63,7 +66,7 @@
         
         <!-- BOTÃO GORDINHO DO MEIO -->
         <div class="fab-wrapper">
-            <button class="big-add-btn" id="add-btn-mobile">➕</button>
+            <button class="big-add-btn glow-btn" id="add-btn-mobile">➕</button>
         </div>
 
         <button class="nav-btn" id="theme-btn-mobile">
@@ -77,9 +80,9 @@
 
     <!-- MODAL: Estatísticas -->
     <div class="modal-overlay" id="stats-modal">
-        <div class="modal-content">
+        <div class="modal-content glass-modal">
             <h3>🔥 Sua Ofensiva</h3>
-            <p style="font-size: 14px; color: var(--text-muted); margin-top: -10px;">Não quebre a corrente!</p>
+            <p class="modal-subtitle">Não quebre a corrente!</p>
             
             <div class="streak-circle">
                 <span class="streak-fire-icon">🔥</span>
@@ -92,13 +95,13 @@
                 <span id="best-streak-display">0 dias</span>
             </div>
             
-            <button class="btn-primary" id="close-stats-btn" style="margin-top: 25px;">Fechar</button>
+            <button class="btn-primary glow-btn" id="close-stats-btn" style="margin-top: 25px;">Fechar</button>
         </div>
     </div>
 
     <!-- MODAL: Configurações -->
     <div class="modal-overlay" id="settings-modal">
-        <div class="modal-content">
+        <div class="modal-content glass-modal">
             <h3>🎨 Personalizar Tema</h3>
             <div class="theme-selector">
                 <button class="theme-color-btn" data-setcolor="emerald" style="background: #10b981;"></button>
@@ -107,36 +110,36 @@
                 <button class="theme-color-btn" data-setcolor="pink" style="background: #ec4899;"></button>
             </div>
             
-            <h3 style="margin-top: 30px; font-size: 18px;">⚙️ Preferências</h3>
-            <div class="settings-row">
+            <h3 class="modal-section-title">⚙️ Preferências</h3>
+            <div class="settings-row glass-item">
                 <span>🔊 Efeitos Sonoros</span>
-                <button id="toggle-sound-btn" class="btn-outline" style="padding: 8px 12px; width: auto; font-size: 14px;">Ligado</button>
+                <button id="toggle-sound-btn" class="btn-outline mini-btn">Ligado</button>
             </div>
 
-            <h3 style="margin-top: 20px; font-size: 18px;">✏️ Gerenciar Hábitos</h3>
+            <h3 class="modal-section-title">✏️ Gerenciar Hábitos</h3>
             <div id="settings-habits-list" class="settings-habits-list">
                 <!-- A lista de hábitos para editar e apagar entra aqui -->
             </div>
             
-            <button class="btn-primary" id="close-settings-btn" style="margin-top: 20px;">Fechar</button>
+            <button class="btn-primary glow-btn" id="close-settings-btn" style="margin-top: 20px;">Fechar</button>
         </div>
     </div>
 
     <!-- MODAL: Adicionar/Editar Hábito -->
     <div class="modal-overlay" id="add-habit-modal">
-        <div class="modal-content">
+        <div class="modal-content glass-modal">
             <h3 id="modal-habit-title">✨ Novo Hábito</h3>
             <div class="input-group">
                 <label>Emoji (Ícone)</label>
-                <input type="text" id="habit-emoji-input" placeholder="Ex: 🏃‍♂️" maxlength="2" value="⭐">
+                <input type="text" id="habit-emoji-input" placeholder="Ex: 🏃‍♂️" maxlength="2" value="⭐" class="glass-input">
             </div>
             <div class="input-group">
                 <label>Nome do Hábito</label>
-                <input type="text" id="habit-name-input" placeholder="Ex: Correr 5km">
+                <input type="text" id="habit-name-input" placeholder="Ex: Correr 5km" class="glass-input">
             </div>
             <div class="modal-buttons">
                 <button class="btn-secondary" id="cancel-habit-btn">Cancelar</button>
-                <button class="btn-primary" id="save-habit-btn">Salvar</button>
+                <button class="btn-primary glow-btn" id="save-habit-btn">Salvar</button>
             </div>
         </div>
     </div>

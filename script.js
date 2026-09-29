@@ -4,7 +4,6 @@ const botaoReset = document.getElementById('reset-btn');
 const botaoNotificacao = document.getElementById('notify-btn');
 const settingsHabitsListDiv = document.getElementById('settings-habits-list');
 
-// Som Local
 const somMoeda = new Audio('./moeda.mp3');
 
 let somLigado = localStorage.getItem('somLigado') !== 'false';
@@ -34,7 +33,32 @@ function tocarSomMoeda() {
     }
 }
 
-// Variáveis da Ofensiva
+// Magia dos Confetes
+function soltarConfetesMagicos() {
+    const emojis = ['✨', '🎉', '🔥', '🏆', '💎', '🌟'];
+    for(let i = 0; i < 40; i++) {
+        const confete = document.createElement('div');
+        confete.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        confete.style.position = 'fixed';
+        confete.style.left = Math.random() * 100 + 'vw';
+        confete.style.top = '-5vh';
+        confete.style.fontSize = (Math.random() * 20 + 15) + 'px';
+        confete.style.zIndex = '9999';
+        confete.style.pointerEvents = 'none';
+        confete.style.transition = 'transform 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 2.5s';
+        
+        document.body.appendChild(confete);
+        
+        setTimeout(() => {
+            confete.style.top = '105vh';
+            confete.style.transform = `rotate(${Math.random() * 720}deg) translateX(${Math.random() * 200 - 100}px)`;
+            confete.style.opacity = '0';
+        }, 50);
+        
+        setTimeout(() => confete.remove(), 2600);
+    }
+}
+
 let streak = parseInt(localStorage.getItem('streakAtual')) || 0;
 let melhorStreak = parseInt(localStorage.getItem('streakMelhor')) || 0;
 let ultimoDiaCompleto = localStorage.getItem('ultimoDiaCompleto'); 
@@ -47,8 +71,6 @@ let listaHabitos = JSON.parse(localStorage.getItem('listaHabitosConfig')) || [
 
 let habitos = JSON.parse(localStorage.getItem('meusHabitos')) || {};
 let notificouHoje = localStorage.getItem('notificouHoje') === 'true';
-
-// Variável para saber se estamos Editando ou Criando um hábito
 let habitoEmEdicaoId = null;
 
 function verificarOfensiva() {
@@ -93,7 +115,6 @@ function renderizarHabitos() {
     renderizarListaGerenciar(); 
 }
 
-// === NOVO: Lista de Gerenciar (Editar e Excluir) ===
 function renderizarListaGerenciar() {
     settingsHabitsListDiv.innerHTML = '';
     if (listaHabitos.length === 0) {
@@ -102,7 +123,7 @@ function renderizarListaGerenciar() {
     }
     listaHabitos.forEach(habito => {
         const div = document.createElement('div');
-        div.className = 'manage-habit-item';
+        div.className = 'manage-habit-item glass-item';
         div.innerHTML = `
             <span>${habito.icon} ${habito.text}</span>
             <div class="manage-actions">
@@ -111,15 +132,11 @@ function renderizarListaGerenciar() {
             </div>
         `;
         
-        // Botão de Editar
-        const editBtn = div.querySelector('.edit');
-        editBtn.addEventListener('click', () => {
+        div.querySelector('.edit').addEventListener('click', () => {
             prepararEdicaoHabito(habito);
         });
 
-        // Botão de Excluir
-        const deleteBtn = div.querySelector('.delete');
-        deleteBtn.addEventListener('click', () => {
+        div.querySelector('.delete').addEventListener('click', () => {
             if(confirm(`Jogar '${habito.text}' no lixo, humano?`)) {
                 excluirHabito(habito.id);
             }
@@ -150,6 +167,7 @@ function atualizarProgresso() {
         const ontem = new Date(Date.now() - 86400000).toDateString();
         
         if (ultimoDiaCompleto !== hoje) {
+            soltarConfetesMagicos(); // Uhuu!
             if (ultimoDiaCompleto === ontem || ultimoDiaCompleto === null || streak === 0) {
                 streak++;
             } else {
@@ -196,7 +214,6 @@ document.getElementById('settings-btn-pc').addEventListener('click', () => modal
 document.getElementById('settings-btn-mobile').addEventListener('click', () => modalSettings.classList.add('show'));
 document.getElementById('close-settings-btn').addEventListener('click', () => modalSettings.classList.remove('show'));
 
-// Função para Resetar a tela de Criação (Para não virar Edição sem querer)
 function prepararCriacaoHabito() {
     habitoEmEdicaoId = null;
     document.getElementById('modal-habit-title').innerText = "✨ Novo Hábito";
@@ -205,16 +222,15 @@ function prepararCriacaoHabito() {
     modalAddHabit.classList.add('show');
 }
 
-// Função para Abrir a tela já no Modo de Edição
 function prepararEdicaoHabito(habito) {
     habitoEmEdicaoId = habito.id;
     document.getElementById('modal-habit-title').innerText = "✏️ Editar Hábito";
     document.getElementById('habit-emoji-input').value = habito.icon;
     document.getElementById('habit-name-input').value = habito.text;
+    modalSettings.classList.remove('show'); // Esconde settings pra focar na edição
     modalAddHabit.classList.add('show');
 }
 
-// Botões de Criar Hábito Normal
 document.getElementById('add-btn-mobile').addEventListener('click', prepararCriacaoHabito);
 document.getElementById('add-btn-pc').addEventListener('click', prepararCriacaoHabito);
 document.getElementById('cancel-habit-btn').addEventListener('click', () => modalAddHabit.classList.remove('show'));
@@ -223,22 +239,19 @@ document.getElementById('stats-btn-pc').addEventListener('click', () => { verifi
 document.getElementById('stats-btn-mobile').addEventListener('click', () => { verificarOfensiva(); modalStats.classList.add('show'); });
 document.getElementById('close-stats-btn').addEventListener('click', () => modalStats.classList.remove('show'));
 
-// === O BOTÃO DE SALVAR MAGIA (Cria ou Edita!) ===
 document.getElementById('save-habit-btn').addEventListener('click', () => {
     const icon = document.getElementById('habit-emoji-input').value || '⭐';
     const text = document.getElementById('habit-name-input').value;
     if (text.trim() === '') { alert("Escreve o nome do hábito!"); return; }
     
     if (habitoEmEdicaoId !== null) {
-        // Sipah está Editando
         const index = listaHabitos.findIndex(h => h.id === habitoEmEdicaoId);
         if (index !== -1) {
             listaHabitos[index].icon = icon;
             listaHabitos[index].text = text;
         }
-        habitoEmEdicaoId = null; // Reseta
+        habitoEmEdicaoId = null; 
     } else {
-        // Sipah está Criando do zero
         const id = 'hab_' + Date.now(); 
         listaHabitos.push({ id, icon, text });
     }
@@ -248,7 +261,6 @@ document.getElementById('save-habit-btn').addEventListener('click', () => {
     renderizarHabitos();
 });
 
-// Temas
 let isDark = localStorage.getItem('darkMode') === 'true';
 let corTema = localStorage.getItem('corTema') || 'emerald';
 
@@ -257,10 +269,12 @@ function aplicarTema() {
         document.body.classList.add('dark-mode');
         document.getElementById('theme-btn-pc').innerText = '☀️';
         document.getElementById('theme-btn-mobile').querySelector('.icon').innerText = '☀️';
+        document.getElementById('meta-theme-color').setAttribute('content', '#1e1e1e');
     } else {
         document.body.classList.remove('dark-mode');
         document.getElementById('theme-btn-pc').innerText = '🌙';
         document.getElementById('theme-btn-mobile').querySelector('.icon').innerText = '🌙';
+        document.getElementById('meta-theme-color').setAttribute('content', '#f8f9fa');
     }
     document.body.setAttribute('data-color', corTema);
 }
